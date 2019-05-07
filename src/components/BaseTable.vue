@@ -49,6 +49,8 @@
     <v-btn flat @click="changeStatus('circulation')">circulation</v-btn>
     <v-btn flat @click="changeStatus('productive')">approve</v-btn>
     <v-btn flat @click="changeStatus('draft')">reject</v-btn>
+    <v-btn flat @click="changeStatus('inactive')">inactivate</v-btn>
+    <v-btn flat @click="changeStatus('blocked')">block</v-btn>
     <v-btn flat @click="changeStatus('archived')">archive</v-btn>
   </v-toolbar>
 
