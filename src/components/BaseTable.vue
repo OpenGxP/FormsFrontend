@@ -49,6 +49,8 @@
     <v-btn flat @click="changeStatus('circulation')">circulation</v-btn>
     <v-btn flat @click="changeStatus('productive')">approve</v-btn>
     <v-btn flat @click="changeStatus('draft')">reject</v-btn>
+    <v-btn flat @click="changeStatus('blocked')">block</v-btn>
+    <v-btn flat @click="changeStatus('inactive')">inactivate</v-btn>
     <v-btn flat @click="changeStatus('archived')">archive</v-btn>
   </v-toolbar>
 
@@ -317,7 +319,7 @@ export default {
               _headers.push(obj)
             }
           }
-          this.headers = _headers
+          // this.headers = _headers
 
           // assign fields to render dialoge
           const postFields = resp.data.post
@@ -346,14 +348,17 @@ export default {
         .then(resp => {
           // bind items and add index for select
           this.items = resp.data
-          /* test if resp is empty
-          if (_items[0]) {
-            this.items = _items.map((item, index) => {
-              item['index'] = index
-              return item
-            })
+          // test if resp is empty
+          const _headers = []
+          if (resp.data[0]) {
+            for (let key of Object.keys(resp.data[0])) {
+              if (this.meta[key]['render']) {
+                _headers.push({'value': key, 'text': this.meta[key]['verbose_name']})
+              }
+            }
           }
-          */
+          this.headers = _headers
+      
 
           // set laoding state
           this.loaded = true

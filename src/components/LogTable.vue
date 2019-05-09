@@ -57,7 +57,7 @@ export default {
                         }
                     }
                     // _headers.sort((a, b) => (a.order > b.order) ? 1 : -1)
-                    this.headers = _headers
+                    // this.headers = _headers
                     this.loadData()
                 })
         },
@@ -68,6 +68,15 @@ export default {
             })
                 .then(resp => {
                     this.items = resp.data
+                    const _headers = []
+                    if (resp.data[0]) {
+                        for (let key of Object.keys(resp.data[0])) {
+                            if (this.meta[key]['render']) {
+                                _headers.push({'value': key, 'text': this.meta[key]['verbose_name']})
+                            }
+                        }
+                    }
+                    this.headers = _headers
                 })
         }
     },
