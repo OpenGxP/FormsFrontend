@@ -15,21 +15,28 @@ const getters = {
 
 const actions = {
   login: ({ commit, dispatch }, user) => {
-    axios({
-      method: 'POST',
-      url: '/login',
-      data: user,
-      withCredentials: true
+    return new Promise((resolve, reject) => {
+      axios({
+        method: 'POST',
+        url: '/login',
+        data: user,
+        withCredentials: true
+      })
+        .then(resp => {
+          commit('login')
+          dispatch('getToken')
+          // dispatch('initialize')
+          dispatch(USER_REQUEST, {
+            'user': user,
+            'permissions': resp.data
+          })
+          resolve(resp)
+        })
+        .catch(err => {
+          commit('failedAttempt', err.response.data)
+          reject(err)
+        })
     })
-      .then(resp => {
-        commit('login', resp)
-        dispatch('getToken')
-        commit(USER_REQUEST, user)
-        router.push('/')
-      })
-      .catch(err => {
-        commit('failedAttempt', err.response.data)
-      })
   },
   logout: ({ commit }) => {
     axios({
@@ -44,7 +51,6 @@ const actions = {
       })
   },
   lo: ({ commit }) => {
-    console.log('executed')
     commit('logout')
     router.push('/login')
   },
@@ -62,6 +68,11 @@ const actions = {
         }
         commit('setToken', token)
       })
+  },
+  setNewPassword: ({ commit }, credentials) => {
+    axios.patch('fwadad', credentials)
+      .then(resp => {})
+      .catch(err => {})
   }
 }
 

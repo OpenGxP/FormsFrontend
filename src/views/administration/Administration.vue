@@ -12,7 +12,7 @@
       <v-flex xs12 sm6 md3>
         <v-tooltip bottom>
           <template v-slot:activator="{ on }">
-            <v-btn v-on="on" @click="item.value = item.default">Set Default</v-btn>
+            <v-btn v-on="on" @click="saveSetting(item.key, item.default)">Set Default</v-btn>
           </template>
           <span>Default: {{item.default}}</span>
         </v-tooltip>
@@ -51,7 +51,6 @@ export default {
           .then(resp => {
             // transform resp into arry of objects
             const _settings = resp.data.get
-            console.log('gugoi ',_settings['key'])
             const settings = []
             for (let key of Object.keys(_settings)) {
               const setting = _settings[key]
@@ -60,7 +59,6 @@ export default {
             }
             this.testItems = settings
             this.settingsMeta = resp.data.get
-            console.log('Setting: ',settings)
             this.getData()
           })
       },
@@ -82,6 +80,7 @@ export default {
         })
           .then(resp => {
             console.log(resp.data)
+            this.getMeta()
           })
       }
     },

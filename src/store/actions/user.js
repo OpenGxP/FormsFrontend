@@ -1,1 +1,2 @@
 export const USER_REQUEST = 'USER_REQUEST'
+export const USER_PERMISSIONS = 'USER_PERMISSIONS'

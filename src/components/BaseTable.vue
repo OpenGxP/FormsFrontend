@@ -20,25 +20,44 @@
     </v-tooltip>
     <v-tooltip bottom>
       <template v-slot:activator="{ on }">
-        <v-btn icon v-on="on" @click="editItem()"><v-icon>edit</v-icon></v-btn>
+        <v-btn
+          icon
+          v-on="on"
+          @click="editItem()"
+          :disabled="activeSelection"
+        ><v-icon>edit</v-icon></v-btn>
       </template>
       <span>Edit</span>
     </v-tooltip>
     <v-tooltip bottom>
       <template v-slot:activator="{ on }">
-        <v-btn icon v-on="on" ><v-icon>file_copy</v-icon></v-btn>
+        <v-btn 
+          icon 
+          v-on="on" 
+          :disabled="activeSelection"
+        ><v-icon>file_copy</v-icon></v-btn>
       </template>
       <span>Copy</span>
     </v-tooltip>
     <v-tooltip bottom>
       <template v-slot:activator="{ on }">
-        <v-btn icon v-on="on"  @click="newVersion()"><v-icon>plus_one</v-icon></v-btn>
+        <v-btn
+          icon
+          v-on="on"
+          @click="newVersion()"
+          :disabled="activeSelection"
+        ><v-icon>plus_one</v-icon></v-btn>
       </template>
       <span>New Version</span>
     </v-tooltip>
     <v-tooltip bottom>
       <template v-slot:activator="{ on }">
-        <v-btn icon v-on="on" @click="deleteItem()"><v-icon>delete</v-icon></v-btn>
+        <v-btn
+          icon 
+          v-on="on"
+          @click="deleteItem()"
+          :disabled="activeSelection"
+        ><v-icon>delete</v-icon></v-btn>
       </template>
       <span>Delete</span>
     </v-tooltip>
@@ -46,12 +65,12 @@
     <v-spacer></v-spacer>
 
     <!-- Life Cycle Buttons -->
-    <v-btn flat @click="changeStatus('circulation')">circulation</v-btn>
-    <v-btn flat @click="changeStatus('productive')">approve</v-btn>
-    <v-btn flat @click="changeStatus('draft')">reject</v-btn>
-    <v-btn flat @click="changeStatus('blocked')">block</v-btn>
-    <v-btn flat @click="changeStatus('inactive')">inactivate</v-btn>
-    <v-btn flat @click="changeStatus('archived')">archive</v-btn>
+    <v-btn flat :disabled="activeSelection" @click="changeStatus('circulation')">circulation</v-btn>
+    <v-btn flat :disabled="activeSelection" @click="changeStatus('productive')">approve</v-btn>
+    <v-btn flat :disabled="activeSelection" @click="changeStatus('draft')">reject</v-btn>
+    <v-btn flat :disabled="activeSelection" @click="changeStatus('blocked')">block</v-btn>
+    <v-btn flat :disabled="activeSelection" @click="changeStatus('inactive')">inactivate</v-btn>
+    <v-btn flat :disabled="activeSelection" @click="changeStatus('archived')">archive</v-btn>
   </v-toolbar>
 
 
@@ -59,7 +78,7 @@
   <!-- data table wrapper -->
   <v-card>
     <v-card-title class="title">
-      {{ vname }}
+      {{ inpt.split('/')[1] }}
       <v-spacer></v-spacer>
       <v-text-field
         v-model="search"
@@ -70,7 +89,7 @@
       ></v-text-field>
 
       <!-- dialog -->
-      <v-dialog v-model="dialog" max-width="500px">
+      <v-dialog v-model="dialog" max-width="800px">
         <!-- header -->
         <v-card>
           <v-card-title>
@@ -94,11 +113,12 @@
                     :label="field.verbose_name"
                     :hint="field.help_text"></app-date-time-picker>
                    -->
-                  <!-- select -->
+                  <!-- select 
                   <app-multi-select v-else-if="field.verbose_name === 'Roles'"
                     :items="roles"
                     label="Roles"
                     @string-value="editedItem[field.name]=$event"></app-multi-select>
+                  -->
                   <!-- text -->
                   <v-text-field v-else
                     :label="field.verbose_name"
@@ -233,6 +253,7 @@ import axios from 'axios'
 import AppTooltip from '@/components/AppTooltip'
 import AppDateTimePicker from '@/components/inputs/AppDateTimePicker'
 import AppMultiSelect from '@/components/inputs/AppMultiSelect'
+import { mapActions } from 'vuex'
 
 export default {
   name: 'BaseDataTable',
@@ -247,48 +268,67 @@ export default {
       headers: [],
       items: [],
       pagination: {
-        sortBy: 'log_id'
+        sortBy: 'unique'
       },
       selected: [],
       dialog: false,
       editedIndex: -1,
       editedItem: {},
       defaultItem: {},
-      meta: {}
+      meta: {},
+      vname: false,
+      veditable: false
     }
   },
+
+   props: {
+    vlink: {
+      type: String
+    }
+  },
+
   components: {
     appTooltip: AppTooltip,
     appDateTimePicker: AppDateTimePicker,
     appMultiSelect: AppMultiSelect
   },
+
   computed: {
     formTitle () {
       return this.editedIndex === -1 ? 'New Item' : 'Edit Item'
     },
     roles () {
       return this.$store.getters.validRoles.map(item => item.role)
+    },
+    activeSelection () {
+      if (this.selected.length != 1) {
+        return true
+      } else {
+        return false
+      }
+    },
+    activeSelection () {
+      if (this.selected.length != 1) {
+        return true
+      } else {
+        return false
+      }
     }
   },
+
   watch: {
     dialog (val) {
       val || this.close()
     }
   },
-  props: {
-    vlink: {
-      type: String
-    },
-    veditable: {
-      type: Boolean,
-      default: false
-    },
-    vname: {
-      type: String,
-      required: true
-    }
-  },
+
   methods: {
+    ...mapActions([
+      'INIT_MASTERDATA', // map `this.increment()` to `this.$store.dispatch('increment')`
+
+      // `mapActions` also supports payloads:
+      'DELETE_MASTERDATA' // map `this.incrementBy(amount)` to `this.$store.dispatch('incrementBy', amount)`
+    ]),
     toggleAll () {
       if (this.selected.length) this.selected = []
       else this.selected = this.items.slice()
@@ -302,7 +342,8 @@ export default {
       }
     },
     loadMeta () {
-      axios.get(`/meta/${this.inpt.split('/')[1]}`)
+      const endpoint = this.inpt.split('/')[1]
+      axios.get(`/meta/${this.vlink}`)
         .then(resp => {
           // assign meta
           const _meta = resp.data.get
@@ -352,14 +393,20 @@ export default {
           const _headers = []
           if (resp.data[0]) {
             for (let key of Object.keys(resp.data[0])) {
-              if (this.meta[key]['render']) {
-                _headers.push({'value': key, 'text': this.meta[key]['verbose_name']})
+              if (this.meta.hasOwnProperty(key)) {
+                if (this.meta[key]['render']) {
+                  _headers.push(
+                    {
+                      'value': key,
+                      'text': this.meta[key]['verbose_name']
+                    }
+                  )
+                }
               }
             }
           }
-          this.headers = _headers
+          if (_headers) this.headers = _headers
       
-
           // set laoding state
           this.loaded = true
         })
@@ -395,19 +442,19 @@ export default {
         })
     },
     deleteItem () {
-      let item = this.selected[0]
-      axios.delete(`${this.inpt}/${item.lifecycle_id}/${item.version}`)
-        .then(resp => {
+      const item = this.selected[0]
+      this.DELETE_MASTERDATA(`${this.inpt}/${item.lifecycle_id}/${item.version}`)
+        .then((resp) => {
           this.snackbarText = 'Object was successfully deleted'
           this.snackbarColor = 'success'
           this.snackbar = true
           this.load()
         })
-        .catch(err => {
+        .catch((err) => {
           this.snackbarText = err.response.data.validation_errors[0]
           this.snackbarColor = 'error'
           this.snackbar = true
-        })
+          })
     },
     load () {
       this.loadMeta()
@@ -493,9 +540,10 @@ export default {
 
     }
   },
+  
   mounted () {
-    this.inpt = this.vlink
-    this.$store.dispatch('LOAD_ROLES')
+    console.log(this.vlink)
+    this.inpt = `admin/${this.vlink}`
     this.load()
   }
 }

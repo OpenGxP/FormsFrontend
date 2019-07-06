@@ -1,7 +1,8 @@
-import { USER_REQUEST } from '../actions/user'
+import { USER_REQUEST, USER_PERMISSIONS } from '../actions/user'
 
 const state = {
-  currentUser: ''
+  currentUser: '',
+  myPermissions: []
 }
 
 const getters = {
@@ -9,14 +10,22 @@ const getters = {
 }
 
 const actions = {
-  [USER_REQUEST]: ({ commit }, user) => {
-    commit(USER_REQUEST, user)
+  [USER_REQUEST]: ({ commit }, payload) => {
+    commit(USER_REQUEST, payload.user)
+    commit(USER_PERMISSIONS, payload.permissions)
+  },
+  [USER_PERMISSIONS]: ({ commit }, payload) => {
+    commit(USER_PERMISSIONS, payload)
   }
 }
 
 const mutations = {
   [USER_REQUEST]: (state, user) => {
     state.currentUser = user.username
+  },
+  [USER_PERMISSIONS]: (state, permissions) => {
+    console.log(permissions)
+    state.myPermissions = permissions
   }
 }
 

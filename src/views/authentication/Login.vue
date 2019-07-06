@@ -3,12 +3,11 @@
     <v-layout align-center justify-center>
       <v-flex xs12 sm8 md4>
         <v-card class="elevation-12">
-          <v-toolbar dark color="primary">
-            <v-toolbar-title>Login</v-toolbar-title>
-            <v-spacer></v-spacer>
-          </v-toolbar>
+          <v-card-title primary-title class="justify-center">
+            <span class="title font-weight-light">Login</span>
+          </v-card-title>
           <v-card-text>
-            <v-form>
+            <v-form class="px-3">
               <v-text-field
                 v-model="username"
                 autofocus
@@ -36,10 +35,13 @@
               ></v-text-field>
             </v-form>
           </v-card-text>
-          <v-card-actions>
-            <v-spacer></v-spacer>
+          <v-card-actions class="justify-center">
             <v-btn @click="login" color="primary">Login</v-btn>
           </v-card-actions>
+
+          <p class="text-xs-center" style="padding: 2em 0px">
+            <router-link style="text-decoration: none;" to="/recoveraccount">Forgot your password?</router-link>
+          </p>
         </v-card>
       </v-flex>
     </v-layout>
@@ -47,10 +49,11 @@
 </template>
 
 <script>
+import axios from 'axios'
+
 export default {
   name: 'login',
-  data () {
-    return {
+  data: () => ({
       err: false,
       errMsgs: [],
       color: 'primary',
@@ -61,17 +64,24 @@ export default {
         required: value => !!value || 'Required.',
         min: v => v.length >= 8 || 'Min 8 characters'
       }
-    }
-  },
+  }),
   methods: {
     login () {
       const username = this.username
       const password = this.password
-      this.$store.dispatch('login', { username, password })
-      /*
-      this.err = true
-      this.errMsgs = this.$store.getters.errMsg
-      */
+        this.$store.dispatch('login', { username, password })
+          .then(resp => {
+            if (resp.data.initial_password) {
+              this.$router.push('/newpassword')
+            } else {
+              this.$store.dispatch('initialize')
+              this.$router.push('/')
+            }
+            })
+          .catch(() => {
+            this.err = true
+            this.errMsgs = this.$store.getters.errMsg
+          })
     }
   }
 }

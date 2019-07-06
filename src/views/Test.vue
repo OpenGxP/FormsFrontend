@@ -1,8 +1,8 @@
 <template>
-  <div>
+  <v-container>
     <v-layout wrap align-center>
 
-       <v-flex xs12 sm6 md4 d-flex>
+       <v-flex xs12 sm6 md4 lg3>
          <v-text-field
             v-model="endpoint"
             error=true
@@ -10,15 +10,16 @@
           </v-text-field>
        </v-flex>
 
-      <v-flex xs12 sm6 md4 d-flex>
+      <v-flex xs12 sm6 md4 lg3>
         <v-btn @click="request()">Ajax request</v-btn>
       </v-flex>
 
-      <v-flex xs12 sm6 md4 d-flex>
-        <app-date-time-picker @sync-date="da=$event"></app-date-time-picker>
+      <v-flex xs12 sm6 md4 lg3>
+        <!--<app-date-time-picker @sync-date="da=$event"></app-date-time-picker>-->
+        <v-btn @click="send()">click</v-btn>
       </v-flex>
 
-      <v-flex xs12 sm6 md4 d-flex>
+      <v-flex xs12 sm6 md4 lg3>
         <v-select
           v-model="values"
           :items="items"
@@ -37,15 +38,15 @@
         </v-select>
       </v-flex>
 
-      <v-flex xs12 sm6 md4 d-flex>
+      <v-flex xs12 sm6 md4 lg3>
         <app-multi-select :items="myroles" v-model="values"></app-multi-select>
       </v-flex>
 
-      <v-flex xs12 sm6 md4 d-flex>
+      <v-flex xs12 sm6 md4 lg3>
         {{values}}
       </v-flex>
 
-      <v-flex xs12 sm12 md12>
+      <v-flex xs12 sm12 md12 lg12>
         <div>{{txt}}</div>
         <!--
         <ul>
@@ -57,7 +58,7 @@
        </v-flex>
 
     </v-layout>
-  </div>
+  </v-container>
 </template>
 
 <script>
@@ -88,6 +89,21 @@ export default {
         this.txt = this.$store.getters.roles
       )
     },
+    send () {
+      axios({
+        method: 'patch',
+        url: `user/change_password`,
+        data: {
+          username: 'initial',
+          password: 'Affe1234',
+          password_new: 'Apfel1234',
+          password_new_verification: 'Apfel1234'
+        }
+      })
+        .then(resp => {
+          //
+        })
+    },
     request () {
       axios({
         method: 'get',
@@ -96,6 +112,12 @@ export default {
         .then(resp => {
           this.txt = resp.data.get
         })
+      },
+      initialize () {
+        axios.get('/')
+          .then(resp => {
+            this.txt = resp.data
+          })
       }
   },
   computed: {
@@ -106,6 +128,7 @@ export default {
   mounted () {
     this.load()
     this.$store.dispatch('LOAD_ROLES')
+    this.$store.dispatch('initialize')
   }
 }
 </script>

@@ -1,8 +1,22 @@
 <template>
+<v-card>
+    <v-card-title class="title">
+        {{title}}
+        <v-spacer></v-spacer>
+        <v-text-field
+            v-model="search"
+            append-icon="search"
+            label="Search"
+            single-line
+            hide-details
+        ></v-text-field>
+    </v-card-title>
+
     <!-- data table -->
     <v-data-table
         :headers="headers"
         :items="items"
+        :search="search"
     >
         <!-- content slot -->
         <template v-slot:items="props">
@@ -12,6 +26,7 @@
         </template>
 
     </v-data-table>
+</v-card>
 </template>
 
 <script>
@@ -29,7 +44,13 @@ export default {
         return {
             headers: [],
             items: [],
-            meta: {}
+            meta: {},
+            search: ''
+        }
+    },
+    computed: {
+        title () {
+            return `${this.endpoint}log`
         }
     },
     methods: {

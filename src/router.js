@@ -2,18 +2,21 @@ import Vue from 'vue'
 import Router from 'vue-router'
 import store from '@/store'
 import Home from '@/views/Home.vue'
-import Login from '@/views/authentication/Login.vue'
-import Users from '@/views/administration/Users'
-import Permissions from '@/views/administration/Permissions'
-import Roles from '@/views/administration/Roles'
-import Ldap from '@/views/administration/Ldap'
-import AccessLog from '@/views/logs/AccessLog'
-import CentralLog from '@/views/logs/CentralLog'
-import PermissionLog from '@/views/logs/PermissionLog'
-import RoleLog from '@/views/logs/RoleLog'
-import UserLog from '@/views/logs/UserLog'
+import Login from '@/views/authentication/Login'
+import RecoverAccount from '@/views/authentication/RecoverAccount'
+import NewPassword from '@/views/authentication/NewPassword'
+import Logs from '@/views/logs/Logs'
+import LogInstance from '@/views/logs/LogInstance'
 import Administration from '@/views/administration/Administration'
 import Test from '@/views/Test'
+import TestPermissions from '@/views/TestPermissions'
+import MasterData from '@/views/administration/MasterData'
+import MasterDataInstance from '@/views/administration/MasterDataInstance'
+import UserDetails from '@/views/administration/UserDetails'
+import NotFound from '@/components/404.vue'
+import zz from '@/views/zz'
+import Profile from '@/views/Profile'
+import Current from '@/views/Test22'
 
 Vue.use(Router)
 
@@ -33,8 +36,19 @@ const ifAuthenticated = (to, from, next) => {
   next('/login')
 }
 
+const ifPermitted = (to, from, next) => {
+  if (store.getters.isAuthenticated) {
+    next()
+    if (1!=1) {
+      next('/')
+      return
+    }
+  }
+  next('/login')
+}
+
 export default new Router({
-  mode: 'history',
+  // mode: 'history',
   routes: [
     {
       path: '/',
@@ -49,16 +63,36 @@ export default new Router({
       beforeEnter: ifAuthenticated
     },
     {
+      path: '/profile',
+      name: 'profile',
+      component: Profile,
+      beforeEnter: ifAuthenticated
+    },
+    {
       path: '/settings',
       name: 'settings',
       component: Administration,
       beforeEnter: ifAuthenticated
     },
     {
-      path: '/users',
-      name: 'users',
-      component: Users,
-      beforeEnter: ifAuthenticated
+      path: '/md',
+      name: 'masterData',
+      component: MasterData,
+      beforeEnter: ifAuthenticated,
+      children: [
+        {
+          path: ':instance',
+          name: 'mdInstance',
+          component: MasterDataInstance,
+          beforeEnter: ifAuthenticated
+        },
+        {
+          path: 'user/:id',
+          name: 'mdUserDetails',
+          component: UserDetails,
+          beforeEnter: ifAuthenticated
+        }
+      ]
     },
     {
       path: '/login',
@@ -67,52 +101,45 @@ export default new Router({
       beforeEnter: ifNotAuthenticated
     },
     {
-      path: '/permissions',
-      name: 'permissions',
-      component: Permissions,
+      path: '/newpassword',
+      name: 'newPassword',
+      component: NewPassword
+    },
+    {
+      path: '/recoveraccount',
+      name: 'recoverAccount',
+      component: RecoverAccount
+    },
+    {
+      path: '/logs',
+      name: 'logs',
+      component: Logs,
+      beforeEnter: ifAuthenticated,
+      children: [
+        {
+          path: ':instance',
+          name: 'logInstance',
+          component: LogInstance,
+          beforeEnter: ifAuthenticated
+        }
+      ]
+    },
+    {
+      path: '/testpermissions',
+      name: 'TestPermissions',
+      component: TestPermissions,
       beforeEnter: ifAuthenticated
     },
     {
-      path: '/roles',
-      name: 'roles',
-      component: Roles,
-      beforeEnter: ifAuthenticated
+      path: '/zz',
+      component: zz
     },
     {
-      path: '/ldap',
-      name: 'ldap',
-      component: Ldap,
-      beforeEnter: ifAuthenticated
+      path: '/test22',
+      component: Current
     },
-    {
-      path: '/logs/access',
-      name: 'AccessLog',
-      component: AccessLog,
-      beforeEnter: ifAuthenticated
-    },
-    {
-      path: '/logs/central',
-      name: 'CentralLog',
-      component: CentralLog,
-      beforeEnter: ifAuthenticated
-    },
-    {
-      path: '/logs/permissions',
-      name: 'PermissionLog',
-      component: PermissionLog,
-      beforeEnter: ifAuthenticated
-    },
-    {
-      path: '/logs/roles',
-      name: 'RoleLog',
-      component: RoleLog,
-      beforeEnter: ifAuthenticated
-    },
-    {
-      path: '/logs/users',
-      name: 'UserLog',
-      component: UserLog,
-      beforeEnter: ifAuthenticated
+    { path: '*',
+      component: NotFound
     }
   ]
 })
