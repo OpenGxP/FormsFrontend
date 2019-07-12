@@ -7,7 +7,6 @@ import RecoverAccount from '@/views/authentication/RecoverAccount'
 import NewPassword from '@/views/authentication/NewPassword'
 import Logs from '@/views/logs/Logs'
 import LogInstance from '@/views/logs/LogInstance'
-import Administration from '@/views/administration/Administration'
 import Test from '@/views/Test'
 import TestPermissions from '@/views/TestPermissions'
 import MasterData from '@/views/administration/MasterData'
@@ -66,12 +65,6 @@ export default new Router({
       path: '/profile',
       name: 'profile',
       component: Profile,
-      beforeEnter: ifAuthenticated
-    },
-    {
-      path: '/settings',
-      name: 'settings',
-      component: Administration,
       beforeEnter: ifAuthenticated
     },
     {
