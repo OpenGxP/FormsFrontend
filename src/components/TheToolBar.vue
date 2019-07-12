@@ -147,7 +147,6 @@ export default {
     mini: false,
     items: [
       {title: 'Profile', navigateTo: '/profile'},
-      {title: 'Settings', navigateTo: '/settings'},
       {title: 'Test', navigateTo: '/test'}
     ],
     administration: [

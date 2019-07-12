@@ -23,7 +23,8 @@ const state = {
     { text: 'version', value: 'version' }
   ],
   instanceMeta: {},
-  instanceDialog: false
+  instanceDialog: false,
+  configuration: {}
 }
 
 const getters = {
@@ -31,7 +32,13 @@ const getters = {
   ep: (state) => state.ep,
   instanceItems: (state) => state.instanceItems,
   instanceHeaders: (state) => state.instanceHeaders,
-  instanceMeta: (state) => state.instanceMeta
+  instanceMeta: (state) => state.instanceMeta,
+  configuration: state => state.configuration,
+  configurationItem: (state) => (instance) => state.configuration.instance,
+  shortPatch: (state) => (instance) => {
+    if (state.configuration[instance]['version'] === false) return true
+    return false
+  }
 }
 
 const actions = {
@@ -189,6 +196,7 @@ const mutations = {
   [INIT_MASTERDATA]: (state, payload) => {
     state.masterData = Object.keys(payload.subjects)
     state.ep = Object.keys(payload.subjects).map(ep => `${payload.root}${ep}`)
+    state.configuration = payload.subjects
   },
   [DELETE_MASTERDATA]: (state, payload) => {
     state.instanceItems = state.instanceItems.filter(obj => obj.unique !== payload.unique)

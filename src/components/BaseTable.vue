@@ -325,10 +325,13 @@ export default {
   methods: {
     ...mapActions([
       'INIT_MASTERDATA', // map `this.increment()` to `this.$store.dispatch('increment')`
-
       // `mapActions` also supports payloads:
-      'DELETE_MASTERDATA' // map `this.incrementBy(amount)` to `this.$store.dispatch('incrementBy', amount)`
+      'DELETE_MASTERDATA', // map `this.incrementBy(amount)` to `this.$store.dispatch('incrementBy', amount)`
     ]),
+    ...mapActions({
+      show: 'show', // map `this.add()` to `this.$store.dispatch('increment')`
+      setOptions: 'setOptions'
+    }),
     toggleAll () {
       if (this.selected.length) this.selected = []
       else this.selected = this.items.slice()
@@ -430,10 +433,18 @@ export default {
       let item = this.selected[0]
       axios.patch(`${this.inpt}/${item.lifecycle_id}/${item.version}/${target}`)
         .then(resp => {
+          //snackbar
+          this.setOptions({
+            color: 'success',
+            message: 'success!',
+          })
+          this.show()
+          /*
           this.snackbarText = 'success'
           this.snackbarColor = 'success'
           this.snackbar = true
           this.load()
+          */
         })
         .catch(err => {
           this.snackbarText = err.response.data.validation_errors[0]
@@ -476,10 +487,16 @@ export default {
         }
       }
       if (this.editedIndex > -1) {
+        if (this.$store.getters.shortPatch(this.$route.path.split(/[,/]+/).pop())) {
+          var u = `/${this.inpt}/${item.unique}`
+        } else {
+          var u = `/${this.inpt}/${item.lifecycle_id}/${item.version}`
+        }
+        console.log(u)
         // edit item
         axios({
           method: 'patch',
-          url: `/${this.inpt}/${item.lifecycle_id}/${item.version}`,
+          url: u,
           data: payload,
           withCredentials: true
         })
