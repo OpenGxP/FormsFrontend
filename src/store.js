@@ -7,6 +7,7 @@ import permission from './store/modules/permission'
 import role from './store/modules/role'
 import logs from './store/modules/logs'
 import masterdata from './store/modules/masterdata'
+import snackbar from './store/modules/snackbar'
 
 Vue.use(Vuex)
 
@@ -31,6 +32,7 @@ export default new Vuex.Store({
     logs,
     user,
     permission,
-    role
+    role,
+    snackbar
   }
 })
