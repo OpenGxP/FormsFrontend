@@ -1,0 +1,1 @@
+export const LOAD_PERMISSIONS = 'LOAD_PERMISSIONS'
