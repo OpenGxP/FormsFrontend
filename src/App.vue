@@ -2,7 +2,7 @@
   <v-app>
     
     <app-toolbar v-if="isAuthenticated"/>
-
+    <snack-bar></snack-bar>
     <v-content>
       <router-view/>
     </v-content>
@@ -12,11 +12,13 @@
 
 <script>
 import TheToolBar from '@/components/TheToolBar'
+import SnackBar from '@/components/helpers/SnackBar'
 
 export default {
   name: 'App',
   components: {
-    appToolbar: TheToolBar
+    appToolbar: TheToolBar,
+    snackBar: SnackBar
   },
   computed: {
     isAuthenticated () {
