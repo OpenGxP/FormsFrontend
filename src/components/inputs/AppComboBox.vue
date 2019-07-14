@@ -28,7 +28,7 @@
 
 <script>
 export default {
-    props: ['value', 'items', 'label', 'hint', 'editable']
+    props: ['value', 'items', 'label', 'hint', 'required', 'editable']
     
     /*{
         items: {

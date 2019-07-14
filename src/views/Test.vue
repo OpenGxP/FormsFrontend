@@ -34,6 +34,9 @@
        </v-flex>
 
     </v-layout>
+
+
+
   </v-container>
 </template>
 
@@ -45,6 +48,7 @@ import AppMultiSelect from '@/components/inputs/AppMultiSelect'
 export default {
   data: function () {
     return {
+      datetime: '',
       txt: '',
       date: new Date().toISOString().substr(0, 10),
       da: new Date().toISOString().substr(0, 10),
