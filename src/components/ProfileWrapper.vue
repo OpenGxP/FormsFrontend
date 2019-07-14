@@ -43,7 +43,7 @@ export default {
       active: null,
       tabs: [
         {name: 'General', content: 'General information regarding the user', component: 'profileGeneral'},
-        {name: 'Password', content: 'Reset password and manage questions', component: 'profilePasswordQuestions'},
+        {name: 'Questions', content: 'Reset password and manage questions', component: 'profilePasswordQuestions'},
         {name: 'Permissions', content: 'Permissions of the logged in user', component: 'profilePermissions'}
 			],
 			currentTabComponent: 'profilePasswordQuestions'

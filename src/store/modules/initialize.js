@@ -16,7 +16,7 @@ const actions = {
   initialize: ({ commit, dispatch }) => {
     return new Promise((resolve, reject) => {
       console.log('initialize')
-      axios.get('')
+      axios.get('/')
         .then(resp => {
           const payload = resp.data
           commit(INIT_MASTERDATA, payload.administration)

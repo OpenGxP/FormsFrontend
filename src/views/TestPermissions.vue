@@ -2,7 +2,7 @@
 
   <div>
   
-  <!--
+ 
   <permission-dialog></permission-dialog>
 
   <v-dialog v-model="dialog" max-width="1000px">
@@ -133,8 +133,7 @@
     </v-container>
   </v-card>
   </v-dialog>
-  -->
-  <reset-password></reset-password>
+  
 
   </div>
 
@@ -143,7 +142,6 @@
 <script>
 import axios from 'axios'
 import PermissionDialog from '@/components/PermissionDialog'
-import ResetPassword from '@/components/ResetPassword'
 
   export default {
     data: () => ({
@@ -156,8 +154,7 @@ import ResetPassword from '@/components/ResetPassword'
       search: null
     }),
     components: {
-      permissionDialog: PermissionDialog,
-      resetPassword: ResetPassword
+      permissionDialog: PermissionDialog
     },
 
     computed: {

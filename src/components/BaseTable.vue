@@ -65,12 +65,14 @@
     <v-spacer></v-spacer>
 
     <!-- Life Cycle Buttons -->
-    <v-btn flat :disabled="activeSelection" @click="changeStatus('circulation')">circulation</v-btn>
-    <v-btn flat :disabled="activeSelection" @click="changeStatus('productive')">approve</v-btn>
-    <v-btn flat :disabled="activeSelection" @click="changeStatus('draft')">reject</v-btn>
-    <v-btn flat :disabled="activeSelection" @click="changeStatus('blocked')">block</v-btn>
-    <v-btn flat :disabled="activeSelection" @click="changeStatus('inactive')">inactivate</v-btn>
-    <v-btn flat :disabled="activeSelection" @click="changeStatus('archived')">archive</v-btn>
+    <template v-if="lifecycleManaged">
+      <v-btn flat :disabled="allowed('circulation')" @click="changeStatus('circulation')">circulation</v-btn>
+      <v-btn flat :disabled="allowed('approve')" @click="changeStatus('productive')">approve</v-btn>
+      <v-btn flat :disabled="allowed('reject')" @click="changeStatus('draft')">reject</v-btn>
+      <v-btn flat :disabled="allowed('block')" @click="changeStatus('blocked')">block</v-btn>
+      <v-btn flat :disabled="allowed('inactivate')" @click="changeStatus('inactive')">inactivate</v-btn>
+      <v-btn flat :disabled="allowed('archive')" @click="changeStatus('archived')">archive</v-btn>
+    </template>
   </v-toolbar>
 
 
@@ -119,13 +121,34 @@
                     label="Roles"
                     @string-value="editedItem[field.name]=$event"></app-multi-select>
                   -->
-                  <!-- text -->
-                  <v-text-field v-else
+                  <!-- select --> 
+                  <app-combo-box v-else-if="field.lookup !== null"
+                    v-model="editedItem[field.name]"
+                    :items="field.lookup['data']"
                     :label="field.verbose_name"
                     :hint="field.help_text"
+                    :required="field.required"
+                    :editable="field.editable"
+                  >
+                  </app-combo-box>
+                  <!-- password -->
+                  <app-password-field v-else-if="field.data_type === 'PasswordField'"
                     v-model="editedItem[field.name]"
-                    clearable
-                  ></v-text-field>
+                    :label="field.verbose_name"
+                    :hint="field.help_text"
+                    :required="field.required"
+                    :editable="field.editable"
+                  >
+                  </app-password-field>
+                  <!-- text -->
+                  <app-text-field v-else
+                    v-model="editedItem[field.name]"
+                    :label="field.verbose_name"
+                    :hint="field.help_text"
+                    :required="field.required"
+                    :editable="field.editable"
+                  >
+                  </app-text-field>
                 </v-flex>
               </v-layout>
             </v-container>
@@ -229,22 +252,6 @@
   </v-card>
   </template>
 
-  <v-snackbar
-    v-model="snackbar"
-    top
-    :color="snackbarColor"
-    auto-height
-    :timeout=6000
-  >
-    {{ snackbarText }}
-    <v-btn
-      flat
-      @click="snackbar = false"
-    >
-      Close
-    </v-btn>
-  </v-snackbar>
-
   </div>
 </template>
 
@@ -253,16 +260,15 @@ import axios from 'axios'
 import AppTooltip from '@/components/AppTooltip'
 import AppDateTimePicker from '@/components/inputs/AppDateTimePicker'
 import AppMultiSelect from '@/components/inputs/AppMultiSelect'
+import AppComboBox from '@/components/inputs/AppComboBox'
+import AppTextField from '@/components/inputs/AppTextField'
+import AppPasswordField from '@/components/inputs/AppPasswordField'
 import { mapActions } from 'vuex'
 
 export default {
   name: 'BaseDataTable',
   data () {
     return {
-      formFields: [],
-      snackbar: false,
-      snackbarText: 'I am a snackbar',
-      snackbarColor: 'primary',
       loaded: false,
       search: '',
       headers: [],
@@ -273,24 +279,39 @@ export default {
       selected: [],
       dialog: false,
       editedIndex: -1,
+      formFields: [],
       editedItem: {},
       defaultItem: {},
       meta: {},
       vname: false,
-      veditable: false
+      veditable: false,
+      allowedTransistions: {
+        draft: ['circulation'],
+        circulation: ['reject', 'approve'],
+        productive: ['reject', 'block', 'inactivate', 'archive'],
+        blocked: ['approve'],
+        inactive: ['blocked'],
+        archived: []
+      }
     }
   },
 
    props: {
     vlink: {
       type: String
+    },
+    lifecycleManaged: {
+      type: Boolean
     }
   },
 
   components: {
     appTooltip: AppTooltip,
     appDateTimePicker: AppDateTimePicker,
-    appMultiSelect: AppMultiSelect
+    appMultiSelect: AppMultiSelect,
+    appComboBox: AppComboBox,
+    appTextField: AppTextField,
+    appPasswordField: AppPasswordField
   },
 
   computed: {
@@ -324,13 +345,12 @@ export default {
 
   methods: {
     ...mapActions([
-      'INIT_MASTERDATA', // map `this.increment()` to `this.$store.dispatch('increment')`
-      // `mapActions` also supports payloads:
-      'DELETE_MASTERDATA', // map `this.incrementBy(amount)` to `this.$store.dispatch('incrementBy', amount)`
+      'INIT_MASTERDATA',
+      'DELETE_MASTERDATA'
     ]),
     ...mapActions({
-      show: 'show', // map `this.add()` to `this.$store.dispatch('increment')`
-      setOptions: 'setOptions'
+      // snackbar
+      activate: 'snackbar/activate'
     }),
     toggleAll () {
       if (this.selected.length) this.selected = []
@@ -351,7 +371,6 @@ export default {
           // assign meta
           const _meta = resp.data.get
           this.meta = _meta
-
 
           // assign headers
           const _headers = []
@@ -375,6 +394,8 @@ export default {
             formFields.push(field)
             if (postFields[keyField]['data_type'] === 'BooleanField') {
               initItem[keyField] = false
+            } else if (postFields[keyField]['data_type'] === 'CharField' && postFields[keyField]['lookup'] !== null) {
+              initItem[keyField] = []
             } else {
               initItem[keyField] = ''
             }
@@ -434,37 +455,24 @@ export default {
       axios.patch(`${this.inpt}/${item.lifecycle_id}/${item.version}/${target}`)
         .then(resp => {
           //snackbar
-          this.setOptions({
-            color: 'success',
-            message: 'success!',
-          })
-          this.show()
-          /*
-          this.snackbarText = 'success'
-          this.snackbarColor = 'success'
-          this.snackbar = true
+          this.activate({color: 'success', message: `Object was successfully set to status ${target}`})
           this.load()
-          */
+          this.selected = []
         })
         .catch(err => {
-          this.snackbarText = err.response.data.validation_errors[0]
-          this.snackbarColor = 'error'
-          this.snackbar = true
+          //snackbar
+          this.activate({color: 'error', message: err.response.data.validation_errors[0]})
         })
     },
     deleteItem () {
       const item = this.selected[0]
       this.DELETE_MASTERDATA(`${this.inpt}/${item.lifecycle_id}/${item.version}`)
         .then((resp) => {
-          this.snackbarText = 'Object was successfully deleted'
-          this.snackbarColor = 'success'
-          this.snackbar = true
+          this.activate({color: 'success', message: 'Object was successfully deleted'})
           this.load()
         })
         .catch((err) => {
-          this.snackbarText = err.response.data.validation_errors[0]
-          this.snackbarColor = 'error'
-          this.snackbar = true
+          this.activate({color: 'success', error: err.response.data.validation_errors[0]})
           })
     },
     load () {
@@ -492,7 +500,6 @@ export default {
         } else {
           var u = `/${this.inpt}/${item.lifecycle_id}/${item.version}`
         }
-        console.log(u)
         // edit item
         axios({
           method: 'patch',
@@ -505,7 +512,6 @@ export default {
             this.load()
           })
           .catch(err => {
-            console.log(err.response.data)
           })
       } else {
         // new item
@@ -524,9 +530,7 @@ export default {
             for (let key of Object.keys(err.response.data)) {
               errMsg += key + ' : ' + err.response.data[key] + '; '
             }
-            this.snackbarColor = 'error'
-            this.snackbarText = errMsg
-            this.snackbar = true
+            this.activate({color: 'error', message: errMsg})
           })
       }
     },
@@ -550,16 +554,21 @@ export default {
           this.load()
         })
         .catch(err => {
-          this.snackbarColor = 'error'
-          this.snackbarText = err.response.data
-          this.snackbar = true
+          this.activate({color: 'error', message: err.response.data})
         })
-
+    },
+    allowed (transition) {
+      if (this.selected.length != 1) {
+        return true
+      } else {
+        const currentStatus = this.selected[0]['status']
+        if (this.allowedTransistions[currentStatus].indexOf(transition) > -1) return false
+        return true
+      }
     }
   },
   
   mounted () {
-    console.log(this.vlink)
     this.inpt = `admin/${this.vlink}`
     this.load()
   }

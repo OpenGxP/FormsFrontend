@@ -1,12 +1,64 @@
 <template>
     <v-text-field
-        label="Regular"
+        v-model="val"
+        @input="handleInput"
+        :label="fieldLabel"
+        :hint="hint"
+        :required="required"
+        :disabled="!editable"
+        clearable
     ></v-text-field>
 </template>
 
 <script>
 export default {
+    props: ['value', 'hint', 'label', 'required', 'editable']
+    /*
+    {
+        value: {
+            type: String
+        },
+        label: {
+            type: String
+        },
+        hint: {
+            type: String,
+            default: ''
+        }
+    }
+    */
+   ,
 
+    // use data to avoid mutating the prop
+    data () {
+        return {
+            val: this.value
+        }
+    },
+
+    // push changes to parent
+    methods: {
+        handleInput (e) {
+            this.$emit('input', this.val)
+        }
+    },
+
+    computed: {
+        fieldLabel () {
+            if (this.required) return `${this.label}*`
+            return this.label
+        }
+    },
+
+    // sync changes from parent
+    watch: {
+        value: {
+            immediate: true,
+            handler(newVal) {
+                this.val = newVal;
+            }
+        }
+    }
 }
 </script>
 

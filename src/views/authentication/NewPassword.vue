@@ -90,7 +90,7 @@ export default {
         err: false,
         errMsgs: [],
         color: 'primary',
-        username: 'initial',
+        username: '',
         password: '',
         password_new: '',
         password_new_verification: '',

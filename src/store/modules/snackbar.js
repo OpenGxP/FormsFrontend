@@ -37,6 +37,10 @@ const actions = {
   },
   resetOptions: ({ commit }) => {
     commit('resetOptions')
+  },
+  activate: ({ commit }, payload) => {
+    commit('setOptions', payload)
+    commit('show')
   }
 }
 
@@ -59,6 +63,7 @@ const mutations = {
 }
 
 export default {
+  namespaced: true,
   state,
   getters,
   actions,

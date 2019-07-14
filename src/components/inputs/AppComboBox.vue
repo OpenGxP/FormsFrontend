@@ -1,14 +1,18 @@
 <template>
     <v-combobox
-        v-model="model"
+        v-model="content"
         :items="items"
         :search-input.sync="search"
         hide-selected
-        hint="Maximum of 5 tags"
-        label="Add some tags"
+        :hint="hint"
+        :required="required"
+        :disabled="!editable"
+        :label="fieldLabel"
         multiple
         persistent-hint
         small-chips
+        @input="handleInput"
+        ref="test"
   >
     <template v-slot:no-data>
       <v-list-tile>
@@ -24,13 +28,56 @@
 
 <script>
 export default {
+    props: ['value', 'items', 'label', 'hint', 'editable']
+    
+    /*{
+        items: {
+            type: Array
+        },
+        value: {
+            type: Array
+        },
+        label: {
+            type: String
+        }
+    }*/
+    ,
 
     data () {
         return {
-            items: ['fefef', 'ewfewa', 'wrfewfw', 'DFEFSEFE'],
-            model: [],
+            content: this.value,
             search: null
         }
+    },
+
+    computed: {
+        fieldLabel () {
+            if (this.required) return `${this.label}*`
+            return this.label
+        }
+    },
+
+    methods: {
+        sync () {
+            // this.$emit('input', this.value)
+            this.$emit('string-value', this.stringValue)
+        },
+        handleInput (e) {
+            this.$emit('input', this.content)
+        }
+    },
+
+    watch: {
+        value: {
+            immediate: true,
+            handler(newVal) {
+                this.content = newVal;
+            }
+        }
+    },
+
+    destoyed () {
+        console.log('combobox destroyed')
     }
 }
 </script>

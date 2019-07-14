@@ -93,18 +93,38 @@
           </v-card-actions>
         </v-card>
     </v-dialog>
+
+    <app-combo-box
+      v-model="test"
+      :items="['fefef', 'ewfewa', 'wrfewfw', 'DFEFSEFE']"
+    >
+    </app-combo-box>
+
+    <app-text-field
+      v-model="tset"
+    >
+    </app-text-field>
+
   </v-container>
 </template>
 
 
 <script>
 import axios from 'axios'
-import { mapMutations } from 'vuex'
 import { mapActions } from 'vuex'
+import AppComboBox from '@/components/inputs/AppComboBox'
+import AppTextField from '@/components/inputs/AppTextField'
 
 export default {
+  components: {
+    appComboBox: AppComboBox,
+    appTextField: AppTextField
+  },
+
 	data () {
 		return {
+      tset: '',
+      test: [],
 			dialog: false,
 			info: '',
 			err: false,
@@ -125,8 +145,7 @@ export default {
 	methods: {
     ...mapActions(
       {
-        show: 'show',
-        setOptions: 'setOptions'
+        activate: 'snackbar/activate'
       }
     ),
 		save () {
@@ -141,14 +160,12 @@ export default {
       })
         .then(resp => {
           this.dialog = false
-          this.setOptions({color: 'success', message: 'password was successfully reset'})
-          this.show()
+          this.activate({color: 'success', message: 'password was successfully reset'})
         })
         .catch(err => {
           this.errMsgs = err.response.data
           this.err = true
-          this.setOptions({color: 'error', message: this.errMsgs})
-          this.show()
+          this.activate({color: 'error', message: this.errMsgs})
         })
     }
   },

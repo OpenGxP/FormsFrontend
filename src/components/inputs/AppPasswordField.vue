@@ -1,61 +1,54 @@
 <template>
     <v-text-field
-        v-model="inputVal"
-        clearable
-        :append-icon="show ? 'visibility' : 'visibility_off'"
-        :type="show ? 'text' : 'password'"
-        name="input-10-1"
-        :label="label"
+        v-model="val"
+        @input="handleInput"
+        :label="fieldLabel"
         :hint="hint"
+        :required="required"
+        :disabled="!editable"
+        :type="show ? 'text' : 'password'"
+        :append-icon="show ? 'visibility' : 'visibility_off'"
         @click:append="show = !show"
+        clearable
     ></v-text-field>
 </template>
 
 <script>
-import { Stream } from 'stream';
 export default {
-    name: 'AppPasswordField',
+    props: ['value', 'hint', 'label', 'required', 'editable'],
 
-    props: {
-        value: {
-            type: String,
-            default: ''
-        },
-        label: {
-            type: String,
-            default: 'Password*'
-        },
-        hint: {
-            type: String,
-            default: ''
-        }
-    },
-
+    // use data to avoid mutating the prop
     data () {
         return {
-            inputVal: this.value,
+            val: this.value,
             show: false
         }
     },
 
+    // push changes to parent
+    methods: {
+        handleInput (e) {
+            this.$emit('input', this.val)
+        }
+    },
+
+    computed: {
+        fieldLabel () {
+            if (this.required) return `${this.label}*`
+            return this.label
+        }
+    },
+
+    // sync changes from parent
     watch: {
-        inputVal(val) {
-            this.$emit('input', val)
+        value: {
+            immediate: true,
+            handler(newVal) {
+                this.val = newVal;
+            }
         }
     }
 }
-
-
-/*
-:append-icon="show1 ? 'visibility' : 'visibility_off'"
-        :rules="[rules.required, rules.min]"
-        :type="show1 ? 'text' : 'password'"
-        name="input-10-1"
-        label="Normal with hint text"
-        hint="At least 8 characters"
-        counter
-        @click:append="show1 = !show1"
-*/
 </script>
 
 <style>

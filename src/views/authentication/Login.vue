@@ -57,8 +57,8 @@ export default {
       err: false,
       errMsgs: [],
       color: 'primary',
-      username: '',
-      password: '',
+      username: 'initial',
+      password: 'Affe1234',
       show1: false,
       rules: {
         required: value => !!value || 'Required.',

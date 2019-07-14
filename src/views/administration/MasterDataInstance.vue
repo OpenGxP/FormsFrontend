@@ -1,6 +1,7 @@
 <template>
     <base-table
       :vlink="endpoint"
+      :lifecycleManaged="managed"
       vkey="key"
       vname="endpoint"
     >
@@ -15,9 +16,18 @@ export default {
   
   data () {
       return {
-          endpoint: this.$route.params.instance
+          endpoint: this.$route.params.instance,
+          config: this.$store.getters.configuration
       }
   },
+
+  computed: {
+    managed () {
+      if(this.config[this.endpoint]['version']) return true
+      return false 
+    }
+  },
+
   beforeRouteUpdate (to, from, next) {
     this.endpoint = to.params.instance
     next()
