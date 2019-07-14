@@ -1,16 +1,16 @@
 import Vue from 'vue'
 import './plugins/vuetify'
-import { abilitiesPlugin } from '@casl/vue'
+// import { abilitiesPlugin } from '@casl/vue'
 import App from './App.vue'
 import router from './router'
 import store from './store'
-import ability from './ability'
-import './registerServiceWorker'
+// import ability from './ability'
+// import './registerServiceWorker'
 import axios from 'axios'
 import { heartbeat } from './helpers/heartbeat'
 
 Vue.config.productionTip = false
-Vue.use(abilitiesPlugin, ability)
+// Vue.use(abilitiesPlugin, ability)
 
 axios.defaults.baseURL = 'https://stating.opengxp.com/api'
 axios.defaults.withCredentials = true
@@ -29,11 +29,10 @@ axios.interceptors.response.use(resp => {
 })
 
 // heartbeat
-// heartbeat()
+heartbeat()
 
 new Vue({
   router,
   store,
-  ability,
   render: h => h(App)
 }).$mount('#app')
