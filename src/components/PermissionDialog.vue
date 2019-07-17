@@ -12,82 +12,78 @@
   </template>
 
   <v-card>
-    <v-container>
 
-      <v-card-title class="primary lighten-2">
+    <v-card-title class="primary lighten-2">
         <span class="headline white--text">Permissions</span>
         <v-spacer></v-spacer>
         <v-icon @click="dialog = false">close</v-icon>
-      </v-card-title>
+    </v-card-title>
 
-      <v-sheet class="pa-3 primary lighten-2">
+    <v-sheet class="pa-3 primary lighten-2">
         <v-layout>
-          <v-flex xs12 lg3 md-6>
-            <v-text-field
-              v-model="search"
-              label="Search Permisions"
-              dark
-              flat
-              solo-inverted
-              hide-details
-              clearable
-              clear-icon="close"
-            ></v-text-field>
-          </v-flex>
+            <v-flex xs12 lg3 md-6>
+                <v-text-field
+                v-model="search"
+                label="Search Permisions"
+                dark
+                flat
+                solo-inverted
+                hide-details
+                clearable
+                clear-icon="close"
+                ></v-text-field>
+            </v-flex>
         </v-layout>
-      </v-sheet>
+    </v-sheet>
 
       <v-layout justify-center>
         <v-flex>
 
-          <v-card-text>
-            <v-treeview
-              v-model="tree"
-              :load-children="fetch"
-              :items="items"
-              activatable
-              active-class="grey lighten-4 indigo--text"
-              selected-color="indigo"
-              open-on-click
-              selectable
-              :search="search"
-              :open.sync="open"
-            >
-            </v-treeview>
-          </v-card-text>
+            <v-card-text>
+                <v-treeview
+                v-model="tree"
+                :load-children="fetch"
+                :items="items"
+                activatable
+                active-class="grey lighten-4 indigo--text"
+                selected-color="indigo"
+                open-on-click
+                selectable
+                :search="search"
+                :open.sync="open"
+                >
+                </v-treeview>
+            </v-card-text>
 
         </v-flex>
         <v-divider vertical></v-divider>
-        <v-flex
-          xs12
-          md6
-        >
+        <v-flex xs12 md6>
 
-          <v-card-text>
-            <div
-              v-if="selections.length === 0"
-              key="title"
-              class="title font-weight-light grey--text pa-3 text-xs-center"
-            >
-              Select permissions
-            </div>
+            <v-card-text>
+                <div
+                    v-if="selections.length === 0"
+                    key="title"
+                    class="title font-weight-light grey--text pa-3 text-xs-center"
+                >
+                    Select permissions
+                </div>
 
-            <v-scroll-x-transition
-              group
-              hide-on-leave
-            >
-              <v-chip
-                v-for="(selection, i) in selections"
-                :key="i"
-                color="green"
-                dark
-                small
-              >
-                <v-icon left small>mdi-beer</v-icon>
-                {{ selection.model }} - {{ selection.permission }}
-              </v-chip>
-            </v-scroll-x-transition>
-          </v-card-text>
+                <v-scroll-x-transition
+                    group
+                    hide-on-leave
+                >
+                <v-chip
+                    v-for="(selection, i) in selections"
+                    :key="i"
+                    color="green"
+                    dark
+                    small
+                >
+                    <v-icon left small>mdi-beer</v-icon>
+                    {{ selection.model }} - {{ selection.permission }}
+                </v-chip>
+                </v-scroll-x-transition>
+            </v-card-text>
 
         </v-flex>
       </v-layout>
@@ -96,7 +92,7 @@
 
       <v-card-actions style="padding-top: 30px">
         <v-btn
-        flat
+            flat
           @click="tree = []"
         >
           Reset
@@ -124,7 +120,6 @@
         </v-btn>
       </v-card-actions>
 
-    </v-container>
   </v-card>
   </v-dialog>
 </template>
@@ -135,7 +130,7 @@ import { Stream } from 'stream';
   export default {
     props: {
         treeData: {
-            type: String,
+            type: Array,
             default: []
         },
         dialog: {
@@ -181,6 +176,9 @@ import { Stream } from 'stream';
         }
 
         return selections
+      },
+      flatSelection () {
+          return this.selections.map(selection => selection.unique)
       },
       shouldShowTree () {
         return this.permissions.length > 0 && !this.isLoading

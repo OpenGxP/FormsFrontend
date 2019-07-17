@@ -1,5 +1,6 @@
 import axios from 'axios'
 import router from '@/router'
+import ability from '@/ability'
 import { USER_REQUEST } from '../actions/user'
 
 const state = {
@@ -30,6 +31,8 @@ const actions = {
             'user': user,
             'permissions': resp.data
           })
+          console.log(resp.data.casl)
+          ability.update(resp.data.casl)
           resolve(resp)
         })
         .catch(err => {

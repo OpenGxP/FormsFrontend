@@ -4,6 +4,7 @@ import store from '@/store'
 import Home from '@/views/Home.vue'
 import Login from '@/views/authentication/Login'
 import RecoverAccount from '@/views/authentication/RecoverAccount'
+import VerifyAccount from '@/views/authentication/VerifyAccount'
 import NewPassword from '@/views/authentication/NewPassword'
 import Logs from '@/views/logs/Logs'
 import LogInstance from '@/views/logs/LogInstance'
@@ -102,6 +103,11 @@ export default new Router({
       path: '/recoveraccount',
       name: 'recoverAccount',
       component: RecoverAccount
+    },
+    {
+      path: '/verifyaccount',
+      name: 'verifyAccount',
+      component: VerifyAccount
     },
     {
       path: '/logs',

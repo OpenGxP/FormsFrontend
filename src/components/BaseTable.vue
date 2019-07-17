@@ -12,13 +12,15 @@
       <span>Reload</span>
     </v-tooltip>
     <v-divider class="mx-2" inset vertical></v-divider>
-    <v-tooltip bottom>
+    <!-- add -->
+    <v-tooltip bottom v-if="config['post'] && ($can('all', 'global') || $can('add', vlink))">
       <template v-slot:activator="{ on }">
         <v-btn icon v-on="on" @click="newItem()"><v-icon>add</v-icon></v-btn>
       </template>
       <span>Add</span>
     </v-tooltip>
-    <v-tooltip bottom>
+    <!-- edit -->
+    <v-tooltip bottom v-if="config['patch'] && ($can('all', 'global') || $can('edit', vlink))">
       <template v-slot:activator="{ on }">
         <v-btn
           icon
@@ -29,6 +31,7 @@
       </template>
       <span>Edit</span>
     </v-tooltip>
+    <!--
     <v-tooltip bottom>
       <template v-slot:activator="{ on }">
         <v-btn 
@@ -39,7 +42,9 @@
       </template>
       <span>Copy</span>
     </v-tooltip>
-    <v-tooltip bottom>
+    -->
+    <!-- version -->
+    <v-tooltip bottom v-if="config['version'] && ($can('all', 'global') || $can('version', vlink))">
       <template v-slot:activator="{ on }">
         <v-btn
           icon
@@ -50,7 +55,8 @@
       </template>
       <span>New Version</span>
     </v-tooltip>
-    <v-tooltip bottom>
+    <!-- delete -->
+    <v-tooltip bottom v-if="config['delete'] && ($can('all', 'global') || $can('delete', vlink))">
       <template v-slot:activator="{ on }">
         <v-btn
           icon 
@@ -61,17 +67,27 @@
       </template>
       <span>Delete</span>
     </v-tooltip>
+    <v-tooltip bottom>
+      <template v-slot:activator="{ on }">
+        <v-btn
+          icon 
+          v-on="on"
+          @click="openLog()"
+        ><v-icon>event_note</v-icon></v-btn>
+      </template>
+      <span>Log</span>
+    </v-tooltip>
     
     <v-spacer></v-spacer>
 
     <!-- Life Cycle Buttons -->
-    <template v-if="lifecycleManaged">
-      <v-btn flat :disabled="allowed('circulation')" @click="changeStatus('circulation')">circulation</v-btn>
-      <v-btn flat :disabled="allowed('approve')" @click="changeStatus('productive')">approve</v-btn>
-      <v-btn flat :disabled="allowed('reject')" @click="changeStatus('draft')">reject</v-btn>
-      <v-btn flat :disabled="allowed('block')" @click="changeStatus('blocked')">block</v-btn>
-      <v-btn flat :disabled="allowed('inactivate')" @click="changeStatus('inactive')">inactivate</v-btn>
-      <v-btn flat :disabled="allowed('archive')" @click="changeStatus('archived')">archive</v-btn>
+    <template v-if="config['version']">
+      <v-btn flat :disabled="allowed('circulation')" @click="changeStatus('circulation')" v-if="$can('all', 'global') || $can('circulation', v-link)">circulation</v-btn>
+      <v-btn flat :disabled="allowed('approve')" @click="changeStatus('productive')" v-if="$can('all', 'global') || $can('productive', v-link)">approve</v-btn>
+      <v-btn flat :disabled="allowed('reject')" @click="changeStatus('draft')" v-if="$can('all', 'global') || $can('reject', v-link)">reject</v-btn>
+      <v-btn flat :disabled="allowed('block')" @click="changeStatus('blocked')" v-if="$can('all', 'global') || $can('block', v-link)">block</v-btn>
+      <v-btn flat :disabled="allowed('inactivate')" @click="changeStatus('inactive')" v-if="$can('all', 'global') || $can('inactivate', v-link)">inactivate</v-btn>
+      <v-btn flat :disabled="allowed('archive')" @click="changeStatus('archived')" v-if="$can('all', 'global') || $can('archive', v-link)">archive</v-btn>
     </template>
   </v-toolbar>
 
@@ -115,12 +131,15 @@
                     :label="field.verbose_name"
                     :hint="field.help_text"></app-date-time-picker>
                    -->
-                  <!-- select 
-                  <app-multi-select v-else-if="field.verbose_name === 'Roles'"
-                    :items="roles"
-                    label="Roles"
-                    @string-value="editedItem[field.name]=$event"></app-multi-select>
-                  -->
+                  <!-- permissions 
+                  <permission-dialog
+                    v-else-if="field.verbose_name === 'Role'"
+                  ></permission-dialog> -->
+                  <!--
+                  <permission-allocation v-else-if="field.verbose_name === 'Permissions'"
+                    :value="convert(editedItem[field.name])"
+                    @input="editedItem[field.name] = $event"
+                  ></permission-allocation> -->
                   <!-- select --> 
                   <app-combo-box v-else-if="field.lookup !== null"
                     v-model="editedItem[field.name]"
@@ -129,6 +148,7 @@
                     :hint="field.help_text"
                     :required="field.required"
                     :editable="field.editable"
+                    :multiple="field.lookup['multi']"
                   >
                   </app-combo-box>
                   <!-- password -->
@@ -216,16 +236,18 @@
 
           <template v-for="(value, key, index) in props.item">
           <td
+            class="text-xs-left"
             :key="index"
             v-if="meta[key]['render'] === true"
-            class="text-xs-right"
           >
             <template v-if="key == 'status'"><v-chip :color="getColor(props.item.status)">{{ props.item[key] }}</v-chip></template>
             <template v-else>{{ props.item[key] }}</template>
           </td>
           </template>
 
-          <td v-if="veditable" class="justify-center layout px-0">
+          <td
+            v-if="veditable"
+            class="justify-center layout px-0">
             <v-icon
               small
               class="mr-2"
@@ -264,6 +286,8 @@ import AppComboBox from '@/components/inputs/AppComboBox'
 import AppTextField from '@/components/inputs/AppTextField'
 import AppPasswordField from '@/components/inputs/AppPasswordField'
 import { mapActions } from 'vuex'
+import PermissionDialog from '@/components/PermissionDialog'
+import PermissionAllocation from '@/components/inputs/PermissionAllocation'
 
 export default {
   name: 'BaseDataTable',
@@ -283,6 +307,7 @@ export default {
       editedItem: {},
       defaultItem: {},
       meta: {},
+      postConfig: {},
       vname: false,
       veditable: false,
       allowedTransistions: {
@@ -300,8 +325,8 @@ export default {
     vlink: {
       type: String
     },
-    lifecycleManaged: {
-      type: Boolean
+    config: {
+      type: Object
     }
   },
 
@@ -311,7 +336,9 @@ export default {
     appMultiSelect: AppMultiSelect,
     appComboBox: AppComboBox,
     appTextField: AppTextField,
-    appPasswordField: AppPasswordField
+    appPasswordField: AppPasswordField,
+    permissionDialog: PermissionDialog,
+    permissionAllocation: PermissionAllocation
   },
 
   computed: {
@@ -352,6 +379,30 @@ export default {
       // snackbar
       activate: 'snackbar/activate'
     }),
+    convert (obj, config) {
+      // iterate fields
+      for (let [key, value] of Object.entries(obj)) {
+        // check for lookup field
+        if (key in config) {
+          // convert multi look up only
+          if (config[key]['lookup'] !== null) {
+              if (config[key]['lookup']['multi'] === true) {
+              // empty string
+              if (value.length === 0) {
+                obj[key] = []
+              // no comma separation, single value
+              } else if (value.indexOf(',') === -1) {
+                obj[key] = [value]
+              // comma separation
+              } else {
+                obj[key] = value.split(',')
+              }
+            }
+          }
+        }
+      }
+      return obj
+    },
     toggleAll () {
       if (this.selected.length) this.selected = []
       else this.selected = this.items.slice()
@@ -370,7 +421,7 @@ export default {
         .then(resp => {
           // assign meta
           const _meta = resp.data.get
-          this.meta = _meta
+          this.meta = resp.data.get
 
           // assign headers
           const _headers = []
@@ -385,6 +436,7 @@ export default {
           // this.headers = _headers
 
           // assign fields to render dialoge
+          this.postConfig = resp.data.post
           const postFields = resp.data.post
           const formFields = []
           const initItem = {}
@@ -395,15 +447,14 @@ export default {
             if (postFields[keyField]['data_type'] === 'BooleanField') {
               initItem[keyField] = false
             } else if (postFields[keyField]['data_type'] === 'CharField' && postFields[keyField]['lookup'] !== null) {
-              initItem[keyField] = []
+              if (postFields[keyField]['lookup']['multi'] === true) initItem[keyField] = []
             } else {
-              initItem[keyField] = ''
+              initItem[keyField] = ""
             }
           }
           this.formFields = formFields
           this.editedItem = initItem
           this.defaultItem = initItem
-
           // load actual data
           this.loadData()
         })
@@ -442,13 +493,17 @@ export default {
       this.dialog = true
     },
     editItem () {
-      let item = this.selected[0]
+      let item = this.convert(this.selected[0], this.postConfig)
       this.editedIndex = this.items.indexOf(item)
       this.editedItem = Object.assign({}, item)
       this.dialog = true
     },
     newItem () {
+      this.editedItem = Object.assign({}, this.defaultItem)
       this.dialog = true
+    },
+    openLog () {
+      this.$router.push({ name: 'logInstance', params: { instance: this.vlink } })
     },
     changeStatus (target) {
       let item = this.selected[0]
@@ -466,7 +521,13 @@ export default {
     },
     deleteItem () {
       const item = this.selected[0]
-      this.DELETE_MASTERDATA(`${this.inpt}/${item.lifecycle_id}/${item.version}`)
+      // this.DELETE_MASTERDATA(`${this.inpt}/${item.lifecycle_id}/${item.version}`)
+      if (this.$store.getters.shortPatch(this.$route.path.split(/[,/]+/).pop())) {
+          var u = `/${this.inpt}/${item.unique}`
+        } else {
+          var u = `/${this.inpt}/${item.lifecycle_id}/${item.version}`
+        }
+      axios.delete(u)
         .then((resp) => {
           this.activate({color: 'success', message: 'Object was successfully deleted'})
           this.load()

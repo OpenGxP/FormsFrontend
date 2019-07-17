@@ -93,18 +93,6 @@
           </v-card-actions>
         </v-card>
     </v-dialog>
-
-    <app-combo-box
-      v-model="test"
-      :items="['fefef', 'ewfewa', 'wrfewfw', 'DFEFSEFE']"
-    >
-    </app-combo-box>
-
-    <app-text-field
-      v-model="tset"
-    >
-    </app-text-field>
-
   </v-container>
 </template>
 
@@ -112,19 +100,11 @@
 <script>
 import axios from 'axios'
 import { mapActions } from 'vuex'
-import AppComboBox from '@/components/inputs/AppComboBox'
-import AppTextField from '@/components/inputs/AppTextField'
 
 export default {
-  components: {
-    appComboBox: AppComboBox,
-    appTextField: AppTextField
-  },
 
 	data () {
 		return {
-      tset: '',
-      test: [],
 			dialog: false,
 			info: '',
 			err: false,

@@ -1,18 +1,18 @@
 <template>
-    <v-combobox
-        v-model="content"
+    <v-select
+        v-model="checkedContent"
         :items="items"
         :search-input.sync="search"
         hide-selected
         :hint="hint"
         :required="required"
-        :readonly="!editable"
+        :disabled="!editable"
         :label="fieldLabel"
         :multiple="multiple"
         persistent-hint
         small-chips
         @input="handleInput"
-
+        ref="test"
   >
     <template v-slot:no-data>
       <v-list-tile>
@@ -23,12 +23,25 @@
         </v-list-tile-content>
       </v-list-tile>
     </template>
-  </v-combobox>
+  </v-select>
 </template>
 
 <script>
 export default {
-    props: ['value', 'items', 'label', 'hint', 'required', 'editable', 'multiple'],
+    props: ['value', 'items', 'label', 'hint', 'required', 'editable', 'multiple']
+    
+    /*{
+        items: {
+            type: Array
+        },
+        value: {
+            type: Array
+        },
+        label: {
+            type: String
+        }
+    }*/
+    ,
 
     data () {
         return {
@@ -41,10 +54,25 @@ export default {
         fieldLabel () {
             if (this.required) return `${this.label}*`
             return this.label
+        },
+        checkedContent () {
+            console.log('items', this.content)
+            console.log(typeof this.content)
+            if (typeof this.content === 'string') {
+                if(this.content.indexOf(',') === -1) {
+                    return [this.itecontentms]
+                }
+                return this.content.split(',')
+            }
+            return this.content
         }
     },
 
     methods: {
+        sync () {
+            // this.$emit('input', this.value)
+            this.$emit('string-value', this.stringValue)
+        },
         handleInput (e) {
             this.$emit('input', this.content)
         }
@@ -57,6 +85,10 @@ export default {
                 this.content = newVal;
             }
         }
+    },
+
+    destoyed () {
+        console.log('combobox destroyed')
     }
 }
 </script>

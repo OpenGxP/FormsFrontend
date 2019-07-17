@@ -12,22 +12,7 @@
 
 <script>
 export default {
-    props: ['value', 'hint', 'label', 'required', 'editable']
-    /*
-    {
-        value: {
-            type: String
-        },
-        label: {
-            type: String
-        },
-        hint: {
-            type: String,
-            default: ''
-        }
-    }
-    */
-   ,
+    props: ['value', 'hint', 'label', 'required', 'editable'],
 
     // use data to avoid mutating the prop
     data () {

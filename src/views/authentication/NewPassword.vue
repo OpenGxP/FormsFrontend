@@ -9,18 +9,8 @@
           <v-card-text>
             <v-form class="px-3">
               <v-text-field
-                  v-model="username"
-                  autofocus
-                  prepend-icon="person"
-                  name="login"
-                  label="Username"
-                  type="text"
-                  :error="err"
-                  :error-messages="errMsgs"
-                  @keyup.enter="save()"
-              ></v-text-field>
-              <v-text-field
                   v-model="password"
+                  autofocus
                   prepend-icon="lock"
                   :append-icon="show1 ? 'visibility_off' : 'visibility'"
                   :rules="[rules.required, rules.min]"
@@ -90,7 +80,6 @@ export default {
         err: false,
         errMsgs: [],
         color: 'primary',
-        username: '',
         password: '',
         password_new: '',
         password_new_verification: '',
@@ -106,14 +95,13 @@ export default {
 
   methods: {
       save () {
-        const username = this.username
         const password = this.password
         const password_new = this.password_new
         const password_new_verification = this.password_new_verification
         axios({
           method: 'patch',
           url: '/user/change_password',
-          data: { username, password, password_new, password_new_verification },
+          data: { password, password_new, password_new_verification },
           withCredentials: true
         })
           .then(resp => {

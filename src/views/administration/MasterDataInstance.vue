@@ -1,7 +1,7 @@
 <template>
     <base-table
       :vlink="endpoint"
-      :lifecycleManaged="managed"
+      :config="instanceConfig"
       vkey="key"
       vname="endpoint"
     >
@@ -22,9 +22,8 @@ export default {
   },
 
   computed: {
-    managed () {
-      if(this.config[this.endpoint]['version']) return true
-      return false 
+    instanceConfig () {
+      return this.config[this.endpoint]
     }
   },
 

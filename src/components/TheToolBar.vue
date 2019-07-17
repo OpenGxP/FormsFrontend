@@ -45,7 +45,7 @@
           </v-list-tile>
         </template>
 
-        <v-list-tile
+        <v-list-tile v-if="$can('all', 'global') || $can('read', item.title)"
           v-for="(item, i) in masterData"
           :key="i"
           router
@@ -80,7 +80,7 @@
           </v-list-tile>
         </template>
 
-        <v-list-tile
+        <v-list-tile v-if="$can('all', 'global') || $can('read', item.title)"
           v-for="(item, i) in logs"
           :key="i"
           router
@@ -113,13 +113,15 @@
       <v-toolbar-title><router-link to="/" style="text-decoration: none; color: white;">OpenGxP</router-link></v-toolbar-title>
       <v-spacer></v-spacer>
       <v-btn 
-        flat 
+        flat
+        to="/profile"
         v-if="user" 
         style="margin: 0px; patting: 0px;"
-        @mouseover="text = 'logout'"
+        @mouseover="text = 'my profile'"
         @mouseleave="text = user">
         <v-icon>person</v-icon>&nbsp;&nbsp;&nbsp;{{text}}
       </v-btn>
+      <!--
       <v-menu offset-y>
         <template v-slot:activator="{ on }">
           <v-btn icon v-on="on"><v-icon>settings</v-icon></v-btn>
@@ -130,6 +132,7 @@
           </v-list-tile>
         </v-list>
       </v-menu>
+      -->
       <v-tooltip bottom>
         <template v-slot:activator="{ on }">
           <v-btn icon v-on="on" @click="logout()"><v-icon>input</v-icon></v-btn>
