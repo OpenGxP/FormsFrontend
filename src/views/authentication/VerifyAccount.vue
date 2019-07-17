@@ -138,7 +138,7 @@
 
           
           <v-card-actions class="justify-center">
-            <v-btn @click="sendRecoveryLink()" color="primary">Reset Password</v-btn>
+            <v-btn @click="resetPassword()" color="primary">Reset Password</v-btn>
           </v-card-actions>
           
           <p class="text-xs-center" style="padding: 2em 0px">
