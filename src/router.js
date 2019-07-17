@@ -105,7 +105,7 @@ export default new Router({
       component: RecoverAccount
     },
     {
-      path: '/verifyaccount',
+      path: '/password_reset_email/:token',
       name: 'verifyAccount',
       component: VerifyAccount
     },
