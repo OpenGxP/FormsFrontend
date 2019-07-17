@@ -29,15 +29,17 @@
             </v-layout>
             <v-layout justify-center>
               <v-flex xs12 md12>
-                <v-textarea
+                <v-text-field
                   v-model="answer_one"
                   clearable
                   label="Answer 1"
-                  auto-grow
-                  rows="1"
                   box
+                  prepend-inner-icon="lock"
+                  :append-icon="showa1 ? 'visibility_off' : 'visibility'"
+                  :type="showa1 ? 'text' : 'password'"
+                  @click:append="showa1 = !showa1"
                 >
-                </v-textarea>
+                </v-text-field>
               </v-flex>
             </v-layout>
 
@@ -61,15 +63,17 @@
             </v-layout>
             <v-layout justify-center>
               <v-flex xs12 md12>
-                <v-textarea
+                <v-text-field
                   v-model="answer_two"
                   clearable
                   label="Answer 2"
-                  auto-grow
-                  rows="1"
                   box
+                  prepend-inner-icon="lock"
+                  :append-icon="showa2 ? 'visibility_off' : 'visibility'"
+                  :type="showa2 ? 'text' : 'password'"
+                  @click:append="showa2 = !showa2"
                 >
-                </v-textarea>
+                </v-text-field>
               </v-flex>
             </v-layout>
 
@@ -93,15 +97,17 @@
             </v-layout>
             <v-layout justify-center>
               <v-flex xs12 md12>
-                <v-textarea
+                <v-text-field
                   v-model="answer_three"
                   clearable
                   label="Answer 3"
-                  auto-grow
-                  rows="1"
                   box
+                  prepend-inner-icon="lock"
+                  :append-icon="showa3 ? 'visibility_off' : 'visibility'"
+                  :type="showa3 ? 'text' : 'password'"
+                  @click:append="showa3 = !showa3"
                 >
-                </v-textarea>
+                </v-text-field>
               </v-flex>
             </v-layout>
 
@@ -168,6 +174,9 @@ export default {
       password_new_verification: '',
       show1: false,
       show2: false,
+      showa1: false,
+      showa2: false,
+      showa3: false,
       rules: {
         required: value => !!value || 'Required.',
         min: v => v.length >= 8 || 'Min 8 characters',
