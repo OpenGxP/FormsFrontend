@@ -27,7 +27,6 @@
           <v-card-text>
             <v-treeview
               v-model="tree"
-              :load-children="fetch"
               :items="items"
               activatable
               active-class="grey lighten-4 indigo--text"
@@ -87,6 +86,12 @@
         >
           Collapse
         </v-btn>
+        <v-btn
+          flat
+          @click="test"
+        >
+          Test
+        </v-btn>
       </v-card-actions>
 
   </v-card>
@@ -100,7 +105,7 @@ import { Stream } from 'stream';
 
     data () {
       return {
-        tree: this.value,
+        tree: [],
         permissions: [],
         isLoading: false,
         types: [],
@@ -149,20 +154,18 @@ import { Stream } from 'stream';
           return acc
         }, []).sort()
       },
-      value (newValue, oldValue) {
-        console.log('value', newValue)
-        // this.tree = this.conv(newValue)
-      },
-      tree (nv, ov) {
-        // console.log('tree', nv)
+      value: {
+        immediate: true,
+        handler (newVal) {
+          if (this.flatSelection.toString() !== newVal) this.tree = this.conv(newVal)
+        }
       }
     },
 
     methods: {
-      fetch () {
-        if (this.permissions.length) return
-        return axios.get('/admin/permissions')
-          .then(resp => this.permissions = resp.data)
+      test () {
+        console.log('edf')
+        this.tree = ["00.00", "05.01"]
       },
       getChildren (type) {
         const permissions = []
@@ -203,6 +206,12 @@ import { Stream } from 'stream';
       handleChange (e) {
         this.$emit('input', this.flatSelection.toString())
       }
+    },
+
+    mounted () {
+      if (this.permissions.length) return
+      return axios.get('/admin/permissions')
+        .then(resp => this.permissions = resp.data)
     }
   }
 </script>

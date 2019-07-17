@@ -67,7 +67,8 @@
       </template>
       <span>Delete</span>
     </v-tooltip>
-    <v-tooltip bottom>
+    <!-- log -->
+    <v-tooltip bottom v-if="($can('all', 'global') || $can('delete', `${vlink}log`))">
       <template v-slot:activator="{ on }">
         <v-btn
           icon 
@@ -82,12 +83,12 @@
 
     <!-- Life Cycle Buttons -->
     <template v-if="config['version']">
-      <v-btn flat :disabled="allowed('circulation')" @click="changeStatus('circulation')" v-if="$can('all', 'global') || $can('circulation', v-link)">circulation</v-btn>
-      <v-btn flat :disabled="allowed('approve')" @click="changeStatus('productive')" v-if="$can('all', 'global') || $can('productive', v-link)">approve</v-btn>
-      <v-btn flat :disabled="allowed('reject')" @click="changeStatus('draft')" v-if="$can('all', 'global') || $can('reject', v-link)">reject</v-btn>
-      <v-btn flat :disabled="allowed('block')" @click="changeStatus('blocked')" v-if="$can('all', 'global') || $can('block', v-link)">block</v-btn>
-      <v-btn flat :disabled="allowed('inactivate')" @click="changeStatus('inactive')" v-if="$can('all', 'global') || $can('inactivate', v-link)">inactivate</v-btn>
-      <v-btn flat :disabled="allowed('archive')" @click="changeStatus('archived')" v-if="$can('all', 'global') || $can('archive', v-link)">archive</v-btn>
+      <v-btn flat :disabled="allowed('circulation')" @click="changeStatus('circulation')" v-if="$can('all', 'global') || $can('circulation', vlink)">circulation</v-btn>
+      <v-btn flat :disabled="allowed('approve')" @click="changeStatus('productive')" v-if="$can('all', 'global') || $can('productive', vlink)">approve</v-btn>
+      <v-btn flat :disabled="allowed('reject')" @click="changeStatus('draft')" v-if="$can('all', 'global') || $can('reject', vlink)">reject</v-btn>
+      <v-btn flat :disabled="allowed('block')" @click="changeStatus('blocked')" v-if="$can('all', 'global') || $can('block', vlink)">block</v-btn>
+      <v-btn flat :disabled="allowed('inactivate')" @click="changeStatus('inactive')" v-if="$can('all', 'global') || $can('inactivate', vlink)">inactivate</v-btn>
+      <v-btn flat :disabled="allowed('archive')" @click="changeStatus('archived')" v-if="$can('all', 'global') || $can('archive', vlink)">archive</v-btn>
     </template>
   </v-toolbar>
 
@@ -135,11 +136,11 @@
                   <permission-dialog
                     v-else-if="field.verbose_name === 'Role'"
                   ></permission-dialog> -->
-                  <!--
+                  <!-- -->
                   <permission-allocation v-else-if="field.verbose_name === 'Permissions'"
-                    :value="convert(editedItem[field.name])"
+                    :value="editedItem[field.name]"
                     @input="editedItem[field.name] = $event"
-                  ></permission-allocation> -->
+                  ></permission-allocation> 
                   <!-- select --> 
                   <app-combo-box v-else-if="field.lookup !== null"
                     v-model="editedItem[field.name]"

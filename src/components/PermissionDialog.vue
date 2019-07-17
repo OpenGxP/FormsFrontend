@@ -227,12 +227,14 @@ import { Stream } from 'stream';
         this.dialog = false
       },
       close () {
-        this.dialog = false
+        this.tree = ["00.00", "03.12"]
+        // this.dialog = false
       }
     },
     mounted () {
-      axios.get('/admin/roles/704c1ced-d47d-4f18-bdf8-4fed1718becb/1')
+      axios.get('/admin/roles/8785b7a1-9284-4e14-996f-1f5625bf73b1/1')
         .then(resp => {
+          console.log(resp.data)
           let p = resp.data.permissions
           // obj to flat list
           const test = this.selections.map(selection => selection.unique)
@@ -241,6 +243,7 @@ import { Stream } from 'stream';
           for (let i of p) {
               te.push(this.permissions.filter(perm => perm.unique === i)[0])
           }
+          console.log(p.split(','))
           this.tree = p.split(',')
         })
     }

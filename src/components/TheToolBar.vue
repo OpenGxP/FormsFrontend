@@ -80,7 +80,7 @@
           </v-list-tile>
         </template>
 
-        <v-list-tile v-if="$can('all', 'global') || $can('read', item.title)"
+        <v-list-tile v-if="$can('all', 'global') || $can('read', `${item.title}log`)"
           v-for="(item, i) in logs"
           :key="i"
           router
