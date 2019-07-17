@@ -11,7 +11,7 @@ import { heartbeat } from './helpers/heartbeat'
 Vue.config.productionTip = false
 Vue.use(abilitiesPlugin, ability)
 
-axios.defaults.baseURL = https://staging.opengxp.com/api
+axios.defaults.baseURL = 'https://staging.opengxp.com/api'
 axios.defaults.withCredentials = true
 
 // interceptors
