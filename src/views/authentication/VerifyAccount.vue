@@ -1,45 +1,144 @@
 <template>
     <v-container fluid fill-height>
     <v-layout align-center justify-center>
-      <v-flex xs12 sm8 md4>
+      <v-flex xs12 sm8 md6>
         <v-card class="elevation-12">
 
           <v-card-title primary-title class="justify-center">
-            <span class="title font-weight-light">Recover Password</span>
+            <span class="title font-weight-light">Reset Password</span>
           </v-card-title>
 
           <v-card-text>
-            <v-form class="px-3">
-              <template v-if="!sent">
-              <v-text-field
-                v-model="recoveryMaildAdress"
-                autofocus
-                name="email"
-                label="We got you covered"
-                type="text"
-                :rules="[rules.required, rules.email]"
-                :error="err"
-                :error-messages="errMsgs"
-                @keyup.enter="sendRecoveryLink()"
-              ></v-text-field>
-              </template>
-              <template v-if="sent">
-                  <p class="text-xs-center">
-                  <v-icon
-                    medium
-                    color="green">
-                      done
-                      
-                  </v-icon>
-                  <span> Message was succefully sent</span>
-                  </p>
-              </template>
-            </v-form>
+            <v-layout justify-center>
+              <v-flex xs12>
+              <div class="headline">Question 1</div>
+              </v-flex>
+            </v-layout>
+            <v-layout justify-center>
+              <v-flex xs12 md12>
+                <v-textarea
+                  v-model="question_one"
+                  clearable
+                  label="Question 1"
+                  auto-grow
+                  rows="1"
+                  box
+                >
+                </v-textarea>
+              </v-flex>
+            </v-layout>
+            <v-layout justify-center>
+              <v-flex xs12 md12>
+                <v-textarea
+                  v-model="answer_one"
+                  clearable
+                  label="Answer 1"
+                  auto-grow
+                  rows="1"
+                  box
+                >
+                </v-textarea>
+              </v-flex>
+            </v-layout>
+
+            <v-layout justify-center>
+              <v-flex xs12>
+              <div class="headline">Question 2</div>
+              </v-flex>
+            </v-layout>
+            <v-layout justify-center>
+              <v-flex xs12 md12>
+                <v-textarea
+                  v-model="question_two"
+                  clearable
+                  label="Question 2"
+                  auto-grow
+                  rows="1"
+                  box
+                >
+                </v-textarea>
+              </v-flex>
+            </v-layout>
+            <v-layout justify-center>
+              <v-flex xs12 md12>
+                <v-textarea
+                  v-model="answer_two"
+                  clearable
+                  label="Answer 2"
+                  auto-grow
+                  rows="1"
+                  box
+                >
+                </v-textarea>
+              </v-flex>
+            </v-layout>
+
+            <v-layout justify-center>
+              <v-flex xs12>
+              <div class="headline">Question 3</div>
+              </v-flex>
+            </v-layout>
+            <v-layout justify-center>
+              <v-flex xs12 md12>
+                <v-textarea
+                  v-model="question_three"
+                  clearable
+                  label="Question 3"
+                  auto-grow
+                  rows="1"
+                  box
+                >
+                </v-textarea>
+              </v-flex>
+            </v-layout>
+            <v-layout justify-center>
+              <v-flex xs12 md12>
+                <v-textarea
+                  v-model="answer_three"
+                  clearable
+                  label="Answer 3"
+                  auto-grow
+                  rows="1"
+                  box
+                >
+                </v-textarea>
+              </v-flex>
+            </v-layout>
+
+            <v-text-field
+              v-model="password_new"
+              prepend-icon="lock"
+              :append-icon="show2 ? 'visibility_off' : 'visibility'"
+              :rules="[rules.required, rules.min]"
+              :type="show2 ? 'text' : 'password'"
+              name="newPassword"
+              label="New Password"
+              id="newPassword"
+              :error="err"
+              :error-messages="errMsgs"
+              @click:append="show2 = !show2"
+              @keyup.enter="resetPassword()"
+            ></v-text-field>
+            <v-text-field
+              v-model="password_new_verification"
+              prepend-icon="lock"
+              :append-icon="show2 ? 'visibility_off' : 'visibility'"
+              :rules="[rules.required, rules.min, rules.match]"
+              :type="show2 ? 'text' : 'password'"
+              name="confirm"
+              label="Confirm New Password"
+              id="confirm"
+              :error="err"
+              :error-messages="errMsgs"
+              @click:append="show2 = !show2"
+              @keyup.enter="resetPassword()"
+            ></v-text-field>
+
           </v-card-text>
 
           
-          <v-card-actions class="justify-center" v-if="!sent">
-            <v-btn @click="sendRecoveryLink()" color="primary">Send recovery link</v-btn>
+          <v-card-actions class="justify-center">
+            <v-btn @click="sendRecoveryLink()" color="primary">Reset Password</v-btn>
           </v-card-actions>
           
           <p class="text-xs-center" style="padding: 2em 0px">
@@ -54,34 +153,59 @@
 <script>
 import axios from 'axios'
 export default {
-  name: 'login',
-  data: () => ({
+  data() {
+    return {
+      token: '',
       err: false,
       errMsgs: [],
-      sent: false,
-      color: 'primary',
-      recoveryMaildAdress: '',
+      question_one: '',
+			answer_one: '',
+			question_two: '',
+			answer_two: '',
+			question_three: '',
+      answer_three: '',
+      password_new: '',
+      password_new_verification: '',
+      show1: false,
+      show2: false,
       rules: {
-          required: value => !!value || 'Required.',
-          email: value => {
-            const pattern = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
-            return pattern.test(value) || 'Invalid e-mail.'
-          }
-        }
-  }),
+        required: value => !!value || 'Required.',
+        min: v => v.length >= 8 || 'Min 8 characters',
+        match: () => (this.password_new === this.password_new_verification) || 'Passwords must match'
+      }
+    }
+  },
+
   methods: {
-    sendRecoveryLink () {
-      const email = this.recoveryMaildAdress
-      axios.post('request_password_reset_email', {email})
+    resetPassword () {
+      axios.post(this.$route.path, {
+        answer_one: this.answer_one,
+        answer_two: this.answer_two,
+        answer_three: this.answer_three,
+        password_new: this.password_new,
+        password_new_verification: this.password_new_verification
+      })
         .then(resp => {
-            this.sent = true
+          this.$router.push('/login')
         })
         .catch(err => {
-            this.err = true
-            this.errMsgs = err.response.data
+          //
         })
     }
   },
+
+  mounted () {
+    this.token = this.$route.params['token']
+    axios.get(this.$route.path)
+      .then(resp => {
+        this.question_one = resp.data.question_one,
+				this.question_two = resp.data.question_two,
+				this.question_three = resp.data.question_three
+      })
+      .catch(err => {
+        //
+      })
+  }
 }
 </script>
 
