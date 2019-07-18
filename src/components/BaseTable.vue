@@ -201,7 +201,7 @@
     >
       <!-- slot header -->
       <template v-slot:headers="props">
-        <tr>
+        <tr class="text-xs-left">
           <th>
             <v-checkbox
               :input-value="props.all"
