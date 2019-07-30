@@ -24,7 +24,6 @@ const mutations = {
     state.currentUser = user.username
   },
   [USER_PERMISSIONS]: (state, permissions) => {
-    console.log(permissions)
     state.myPermissions = permissions
   }
 }

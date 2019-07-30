@@ -2,8 +2,6 @@
     <base-table
       :vlink="endpoint"
       :config="instanceConfig"
-      vkey="key"
-      vname="endpoint"
     >
     </base-table>
 </template>
@@ -13,24 +11,25 @@ import BaseTable from '@/components/BaseTable'
 
 export default {
   name: 'MasterDataInstance',
-  
+
   data () {
-      return {
-          endpoint: this.$route.params.instance,
-          config: this.$store.getters.configuration
-      }
+    return {
+      endpoint: this.$route.params.instance
+    }
   },
 
   computed: {
     instanceConfig () {
-      return this.config[this.endpoint]
+      return this.$store.getters.data[this.$route.params.category]['subjects'][this.$route.params.instance]
     }
   },
 
   beforeRouteUpdate (to, from, next) {
     this.endpoint = to.params.instance
+    this.$forceUpdate()
     next()
   },
+
   components: {
     baseTable: BaseTable
   }

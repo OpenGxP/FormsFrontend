@@ -2,6 +2,7 @@ import Vue from 'vue'
 import Vuex from 'vuex'
 import auth from './store/modules/auth'
 import initialize from './store/modules/initialize'
+import configuration from './store/modules/configuration'
 import user from './store/modules/user'
 import permission from './store/modules/permission'
 import role from './store/modules/role'
@@ -29,6 +30,7 @@ export default new Vuex.Store({
     auth,
     masterdata,
     initialize,
+    configuration,
     logs,
     user,
     permission,

@@ -1,10 +1,11 @@
 <template>
-	<div>
+  <div>
     <v-tabs
       v-model="active"
-      color="indigo"
       dark
-      slider-color="yellow"
+      background-color="indigo"
+      color="white"
+      slider-color="orange"
     >
       <v-tab
         v-for="(tab, index) in tabs"
@@ -20,11 +21,11 @@
       >
         <v-card flat>
           <v-card-text>{{ tab.content }}</v-card-text>
-					<component :is="tab.component"></component>
+          <component :is="tab.component"></component>
         </v-card>
       </v-tab-item>
     </v-tabs>
-    <div class="text-xs-center mt-3">
+    <div class="text-center mt-3">
       <v-btn @click="next">next tab</v-btn>
     </div>
   </div>
@@ -33,21 +34,20 @@
 <script>
 import ProfilePasswordQuestions from '@/components/ProfilePasswordQuestions'
 import ProfileGeneral from '@/components/ProfileGeneral'
-import ProfilePermissions from '@/components/ProfilePermissions'
 
 export default {
-	name: 'ProfileWrapper',
+  name: 'ProfileWrapper',
 
-	data () {
+  data () {
     return {
       active: null,
       tabs: [
-        {name: 'General', content: 'General information regarding the user', component: 'profileGeneral'},
-        {name: 'Questions', content: 'Reset password and manage questions', component: 'profilePasswordQuestions'},
-        {name: 'Permissions', content: 'Permissions of the logged in user', component: 'profilePermissions'}
-			],
-			currentTabComponent: 'profilePasswordQuestions'
-      }
+        { name: 'General', content: 'General information regarding the user', component: 'profileGeneral' },
+        { name: 'Questions', content: 'Reset password and manage questions', component: 'profilePasswordQuestions' }
+      ],
+      currentTabComponent: 'profilePasswordQuestions',
+      ldap: true
+    }
   },
 
   methods: {
@@ -55,16 +55,21 @@ export default {
       const active = parseInt(this.active)
       this.active = (active < 2 ? active + 1 : 0)
     }
-	},
-	
-	components: {
-		profileGeneral: ProfileGeneral,
-    profilePasswordQuestions: ProfilePasswordQuestions,
-    profilePermissions: ProfilePermissions
-	}
+  },
+
+  components: {
+    profileGeneral: ProfileGeneral,
+    profilePasswordQuestions: ProfilePasswordQuestions
+  },
+
+  mounted () {
+    this.$http.get('meta/profile')
+      .then(resp => {
+        this.ldap = resp.data.get.ldap
+      })
+  }
 }
 </script>
 
 <style>
-
 </style>

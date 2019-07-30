@@ -1,21 +1,37 @@
 <template>
-    <v-container fluid fill-height>
-    <v-layout align-center justify-center>
-      <v-flex xs12 sm8 md6>
+  <v-container
+    fluid
+    fill-height
+  >
+    <v-layout
+      align-center
+      justify-center
+    >
+      <v-flex
+        xs12
+        sm8
+        md6
+      >
         <v-card class="elevation-12">
 
-          <v-card-title primary-title class="justify-center">
+          <v-card-title
+            primary-title
+            class="justify-center"
+          >
             <span class="title font-weight-light">Reset Password</span>
           </v-card-title>
 
           <v-card-text>
             <v-layout justify-center>
               <v-flex xs12>
-              <div class="headline">Question 1</div>
+                <div class="headline">Question 1</div>
               </v-flex>
             </v-layout>
             <v-layout justify-center>
-              <v-flex xs12 md12>
+              <v-flex
+                xs12
+                md12
+              >
                 <v-textarea
                   v-model="question_one"
                   clearable
@@ -28,7 +44,10 @@
               </v-flex>
             </v-layout>
             <v-layout justify-center>
-              <v-flex xs12 md12>
+              <v-flex
+                xs12
+                md12
+              >
                 <v-text-field
                   v-model="answer_one"
                   clearable
@@ -45,11 +64,14 @@
 
             <v-layout justify-center>
               <v-flex xs12>
-              <div class="headline">Question 2</div>
+                <div class="headline">Question 2</div>
               </v-flex>
             </v-layout>
             <v-layout justify-center>
-              <v-flex xs12 md12>
+              <v-flex
+                xs12
+                md12
+              >
                 <v-textarea
                   v-model="question_two"
                   clearable
@@ -62,7 +84,10 @@
               </v-flex>
             </v-layout>
             <v-layout justify-center>
-              <v-flex xs12 md12>
+              <v-flex
+                xs12
+                md12
+              >
                 <v-text-field
                   v-model="answer_two"
                   clearable
@@ -79,11 +104,14 @@
 
             <v-layout justify-center>
               <v-flex xs12>
-              <div class="headline">Question 3</div>
+                <div class="headline">Question 3</div>
               </v-flex>
             </v-layout>
             <v-layout justify-center>
-              <v-flex xs12 md12>
+              <v-flex
+                xs12
+                md12
+              >
                 <v-textarea
                   v-model="question_three"
                   clearable
@@ -96,7 +124,10 @@
               </v-flex>
             </v-layout>
             <v-layout justify-center>
-              <v-flex xs12 md12>
+              <v-flex
+                xs12
+                md12
+              >
                 <v-text-field
                   v-model="answer_three"
                   clearable
@@ -142,13 +173,21 @@
 
           </v-card-text>
 
-          
           <v-card-actions class="justify-center">
-            <v-btn @click="resetPassword()" color="primary">Reset Password</v-btn>
+            <v-btn
+              @click="resetPassword()"
+              color="primary"
+            >Reset Password</v-btn>
           </v-card-actions>
-          
-          <p class="text-xs-center" style="padding: 2em 0px">
-              <router-link style="text-decoration: none;" to="/login">Return to login</router-link>
+
+          <p
+            class="text-xs-center"
+            style="padding: 2em 0px"
+          >
+            <router-link
+              style="text-decoration: none;"
+              to="/login"
+            >Return to login</router-link>
           </p>
         </v-card>
       </v-flex>
@@ -159,16 +198,16 @@
 <script>
 import axios from 'axios'
 export default {
-  data() {
+  data () {
     return {
       token: '',
       err: false,
       errMsgs: [],
       question_one: '',
-			answer_one: '',
-			question_two: '',
-			answer_two: '',
-			question_three: '',
+      answer_one: '',
+      question_two: '',
+      answer_two: '',
+      question_three: '',
       answer_three: '',
       password_new: '',
       password_new_verification: '',
@@ -208,8 +247,8 @@ export default {
     axios.get(this.$route.path)
       .then(resp => {
         this.question_one = resp.data.question_one,
-				this.question_two = resp.data.question_two,
-				this.question_three = resp.data.question_three
+        this.question_two = resp.data.question_two,
+        this.question_three = resp.data.question_three
       })
       .catch(err => {
         //
@@ -219,5 +258,4 @@ export default {
 </script>
 
 <style>
-
 </style>

@@ -31,7 +31,6 @@ const actions = {
             'user': user,
             'permissions': resp.data
           })
-          console.log(resp.data.casl)
           ability.update(resp.data.casl)
           resolve(resp)
         })

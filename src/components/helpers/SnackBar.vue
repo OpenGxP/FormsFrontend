@@ -12,7 +12,7 @@
     >
       {{ options.message }}
       <v-btn
-        flat
+        text
         @click="hide()"
       >
         Close
@@ -24,33 +24,33 @@
 import { mapActions } from 'vuex'
 
 export default {
-    data () {
-        return {
-            //
-        }
-    },
-
-    methods: {
-        ...mapActions({
-            hide: 'snackbar/hide',
-            show: 'snackbar/show',
-            setActive: 'snackbar/setActive'
-        })
-    },
-
-    computed: {
-        active: {
-            get () {
-                return this.$store.getters['snackbar/isActive']
-            },
-            set (newValue) {
-                this.setActive(newValue)
-            }
-        },
-        options () {
-            return this.$store.getters['snackbar/snackOptions']
-        }
+  data () {
+    return {
+      //
     }
+  },
+
+  methods: {
+    ...mapActions({
+      hide: 'snackbar/hide',
+      show: 'snackbar/show',
+      setActive: 'snackbar/setActive'
+    })
+  },
+
+  computed: {
+    active: {
+      get () {
+        return this.$store.getters['snackbar/isActive']
+      },
+      set (newValue) {
+        this.setActive(newValue)
+      }
+    },
+    options () {
+      return this.$store.getters['snackbar/snackOptions']
+    }
+  }
 }
 </script>
 

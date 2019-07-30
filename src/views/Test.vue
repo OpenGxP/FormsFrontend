@@ -1,60 +1,55 @@
 <template>
-  <v-container>
-    <v-layout wrap align-center>
+<v-container>
+<v-card color="pink">
 
-       <v-flex xs12 sm6 md4 lg3>
+    <v-layout wrap align-center class="pa-2">
+
+       <v-flex xs12 sm6 md4 class="pa-2">
          <v-text-field
             v-model="endpoint"
-            error=true
-            error-messages="No">
+          >
           </v-text-field>
        </v-flex>
 
-      <v-flex xs12 sm6 md4 lg3>
+      <v-flex xs12 sm6 md4 class="pa-2">
         <v-btn @click="request()">Ajax request</v-btn>
       </v-flex>
 
+      <v-flex xs12 class="pa-2">
+        <p style="padding-top: 50px;">{{response}}</p>
+      </v-flex>
 
     </v-layout>
 
-
-
-  </v-container>
+</v-card>
+</v-container>
 </template>
 
 <script>
-import axios from 'axios'
-import AppDateTimePicker from '@/components/inputs/AppDateTimePicker'
-
 export default {
-  data: function () {
+  data () {
     return {
-      datetime: '',
-      txt: '',
-      endpoint: '/admin/roles',
+      response: '',
+      endpoint: '/admin/roles'
     }
-  },
-
-  components: {
-    appDateTimePicker: AppDateTimePicker
   },
 
   methods: {
     request () {
-      axios({
+      this.$http({
         method: 'get',
         url: `${this.endpoint}`
       })
         .then(resp => {
-          this.txt = resp.data.get
+          this.response = resp.data
         })
-      },
-      initialize () {
-        axios.get('/')
-          .then(resp => {
-            this.txt = resp.data
-          })
-      }
+    },
+    initialize () {
+      this.$http.get('/')
+        .then(resp => {
+          this.response = resp.data
+        })
+    }
   }
 }
 </script>

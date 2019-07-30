@@ -86,39 +86,36 @@ export default {
   },
 
   data () {
-      return {
-        err: false,
-        errMsgs: [],
-        color: 'primary',
-        username: 'initial',
-        oldPassword: '',
-        newPassword: '',
-        newPasswordConfirm: '',
-        show1: false,
-        show2: false,
-        rules: {
-            required: value => !!value || 'Required.',
-            min: v => v.length >= 8 || 'Min 8 characters',
-            match: () => (this.password === this.confirm) || 'Passwords must match'
-        }
+    return {
+      err: false,
+      errMsgs: [],
+      color: 'primary',
+      username: 'initial',
+      oldPassword: '',
+      newPassword: '',
+      newPasswordConfirm: '',
+      show1: false,
+      show2: false,
+      rules: {
+        required: value => !!value || 'Required.',
+        min: v => v.length >= 8 || 'Min 8 characters',
+        match: () => (this.password === this.confirm) || 'Passwords must match'
       }
+    }
   },
   methods: {
-      save () {
-          console.log('reset')
-          axios.patch('/user/change_password', {
-            username: 'initial',
-            password: 'Apfel1234',
-            password_new: 'Daniel1234',
-            password_new_verification: 'Daniel1234'
-          })
-            .then(resp => {
-              if (resp.status === 200) {console.log('success')}
-            })
-            .catch(err => {
-              console.log('error')
-            })
-      }
+    save () {
+      axios.patch('/user/change_password', {
+        username: 'initial',
+        password: 'Apfel1234',
+        password_new: 'Daniel1234',
+        password_new_verification: 'Daniel1234'
+      })
+        .then(resp => {
+          if (resp.status === 200) {}
+        })
+        .catch(err => {})
+    }
   }
 }
 </script>

@@ -1,5 +1,4 @@
 import axios from 'axios'
-import router from '@/router'
 
 import { INIT_MASTERDATA } from '../actions/masterdata'
 import { INIT_LOGS } from '../actions/logs'
@@ -15,7 +14,6 @@ const getters = {
 const actions = {
   initialize: ({ commit, dispatch }) => {
     return new Promise((resolve, reject) => {
-      console.log('initialize')
       axios.get('')
         .then(resp => {
           const payload = resp.data

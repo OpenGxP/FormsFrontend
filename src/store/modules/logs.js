@@ -1,4 +1,3 @@
-import axios from 'axios'
 import { INIT_LOGS } from '../actions/logs'
 
 const state = {

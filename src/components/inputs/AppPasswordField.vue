@@ -15,39 +15,39 @@
 
 <script>
 export default {
-    props: ['value', 'hint', 'label', 'required', 'editable'],
+  props: ['value', 'hint', 'label', 'required', 'editable'],
 
-    // use data to avoid mutating the prop
-    data () {
-        return {
-            val: this.value,
-            show: false
-        }
-    },
-
-    // push changes to parent
-    methods: {
-        handleInput (e) {
-            this.$emit('input', this.val)
-        }
-    },
-
-    computed: {
-        fieldLabel () {
-            if (this.required) return `${this.label}*`
-            return this.label
-        }
-    },
-
-    // sync changes from parent
-    watch: {
-        value: {
-            immediate: true,
-            handler(newVal) {
-                this.val = newVal;
-            }
-        }
+  // use data to avoid mutating the prop
+  data () {
+    return {
+      val: this.value,
+      show: false
     }
+  },
+
+  // push changes to parent
+  methods: {
+    handleInput (e) {
+      this.$emit('input', this.val)
+    }
+  },
+
+  computed: {
+    fieldLabel () {
+      if (this.required) return `${this.label}*`
+      return this.label
+    }
+  },
+
+  // sync changes from parent
+  watch: {
+    value: {
+      immediate: true,
+      handler (newVal) {
+        this.val = newVal
+      }
+    }
+  }
 }
 </script>
 

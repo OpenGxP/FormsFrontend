@@ -9,14 +9,15 @@ import NewPassword from '@/views/authentication/NewPassword'
 import Logs from '@/views/logs/Logs'
 import LogInstance from '@/views/logs/LogInstance'
 import Test from '@/views/Test'
-import TestPermissions from '@/views/TestPermissions'
 import MasterData from '@/views/administration/MasterData'
 import MasterDataInstance from '@/views/administration/MasterDataInstance'
-import UserDetails from '@/views/administration/UserDetails'
 import NotFound from '@/components/404.vue'
 import zz from '@/views/zz'
 import Profile from '@/views/Profile'
-import Current from '@/views/Test22'
+
+import Category from '@/views/test/Category'
+import Instance from '@/views/test/Instance'
+import Id from '@/views/test/Id'
 
 Vue.use(Router)
 
@@ -32,17 +33,6 @@ const ifAuthenticated = (to, from, next) => {
   if (store.getters.isAuthenticated) {
     next()
     return
-  }
-  next('/login')
-}
-
-const ifPermitted = (to, from, next) => {
-  if (store.getters.isAuthenticated) {
-    next()
-    if (1!=1) {
-      next('/')
-      return
-    }
   }
   next('/login')
 }
@@ -69,7 +59,7 @@ export default new Router({
       beforeEnter: ifAuthenticated
     },
     {
-      path: '/md',
+      path: '/admin',
       name: 'masterData',
       component: MasterData,
       beforeEnter: ifAuthenticated,
@@ -78,12 +68,6 @@ export default new Router({
           path: ':instance',
           name: 'mdInstance',
           component: MasterDataInstance,
-          beforeEnter: ifAuthenticated
-        },
-        {
-          path: 'user/:id',
-          name: 'mdUserDetails',
-          component: UserDetails,
           beforeEnter: ifAuthenticated
         }
       ]
@@ -124,20 +108,36 @@ export default new Router({
       ]
     },
     {
-      path: '/testpermissions',
-      name: 'TestPermissions',
-      component: TestPermissions,
-      beforeEnter: ifAuthenticated
-    },
-    {
       path: '/zz',
       component: zz
     },
     {
-      path: '/test22',
-      component: Current
+      path: '/api/:category',
+      name: 'Category',
+      component: Category,
+      props: true,
+      beforeEnter: ifAuthenticated,
+      children: [
+        {
+          path: ':instance',
+          name: 'Instance',
+          component: MasterDataInstance,
+          props: true,
+          beforeEnter: ifAuthenticated,
+          children: [
+            {
+              path: ':id',
+              name: 'Id',
+              component: Id,
+              props: true,
+              beforeEnter: ifAuthenticated
+            }
+          ]
+        }
+      ]
     },
-    { path: '*',
+    {
+      path: '*',
       component: NotFound
     }
   ]

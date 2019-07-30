@@ -1,5 +1,5 @@
 <template>
-  <v-snackbar 
+  <v-snackbar
     v-model="rab"
     :left="snackbar.direction === 'left'"
     :right="snackbar.direction === 'rigth'"
@@ -19,7 +19,6 @@
     </v-btn>
   </v-snackbar>
 </template>
-
 
 <script>
 export default {
@@ -44,7 +43,7 @@ export default {
 
   data () {
     return {
-      snackbarVisible: false,
+      snackbarVisible: false
 
     }
   },

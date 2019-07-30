@@ -30,10 +30,10 @@
 
 <script>
 export default {
-	name: 'AppTest',
-	data: () => ({
-      date: new Date().toISOString().substr(0, 10),
-      menu: false
-    })
-}	
+  name: 'AppTest',
+  data: () => ({
+    date: new Date().toISOString().substr(0, 10),
+    menu: false
+  })
+}
 </script>

@@ -6,13 +6,13 @@
 import LogTable from '@/components/LogTable'
 
 export default {
-    name: 'LogWrapper',
-    props: [
-        'endpoint'
-    ],
-    components: {
-        logTable: LogTable
-    }
+  name: 'LogWrapper',
+  props: [
+    'endpoint'
+  ],
+  components: {
+    logTable: LogTable
+  }
 }
 </script>
 
