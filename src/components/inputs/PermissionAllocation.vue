@@ -69,11 +69,12 @@
               color="green"
               dark
               small
+              class="ma-1"
             >
               <v-icon
                 left
                 small
-              >mdi-beer</v-icon>
+              >lock</v-icon>
               {{ selection.model }} - {{ selection.permission }}
             </v-chip>
           </v-scroll-x-transition>
@@ -208,7 +209,7 @@ export default {
   mounted () {
     if (this.permissions.length) return
     return axios.get('/admin/permissions')
-      .then(resp => this.permissions = resp.data)
+      .then(resp => { this.permissions = resp.data })
   }
 }
 </script>

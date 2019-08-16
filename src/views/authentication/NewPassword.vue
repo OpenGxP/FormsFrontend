@@ -10,7 +10,8 @@
       <v-flex
         xs12
         sm8
-        md4
+        md8
+        lg4
       >
         <v-card class="elevation-12">
           <v-card-title
@@ -123,10 +124,12 @@ export default {
         .then(resp => {
           if (resp.status === 200) {
             this.$store.dispatch('initialize')
+            this.$store.dispatch('get')
+            this.$store.commit('login')
             this.$router.push('/')
           }
         })
-        .catch(err => {})
+        .catch(err => { })
     }
   }
 }

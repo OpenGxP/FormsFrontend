@@ -1,7 +1,9 @@
 <template>
   <v-app>
+    <app-banner></app-banner>
     <app-toolbar v-if="isAuthenticated" />
-    <snack-bar></snack-bar>
+    <app-snack-bar></app-snack-bar>
+    <app-overlay></app-overlay>
     <v-content>
       <router-view />
     </v-content>
@@ -12,19 +14,37 @@
 <script>
 import TheToolBar from '@/components/TheToolBar'
 import TheFoorter from '@/components/TheFooter'
-import SnackBar from '@/components/helpers/SnackBar'
+import TheSnackBar from '@/components/TheSnackBar'
+import TheOverlay from '@/components/TheOverlay'
+import TheBanner from '@/components/globals/TheBanner'
 
 export default {
   name: 'App',
+
   components: {
     appToolbar: TheToolBar,
     appFooter: TheFoorter,
-    snackBar: SnackBar
+    appSnackBar: TheSnackBar,
+    appOverlay: TheOverlay,
+    appBanner: TheBanner
   },
+
   computed: {
     isAuthenticated () {
       return this.$store.getters.isAuthenticated
     }
+  },
+
+  mounted () {
+    // for scoping
+    /*
+    var vm = this
+    window.addEventListener('keyup', function (event) {
+      if (event.keyCode === 112) {
+        vm.newItem()
+      }
+    })
+    */
   }
 }
 </script>

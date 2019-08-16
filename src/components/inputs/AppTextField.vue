@@ -6,13 +6,16 @@
         :hint="hint"
         :required="required"
         :disabled="!editable"
+        :autofocus="autofocus"
+        :error="error"
+        :error-messages="errormsgs"
         clearable
     ></v-text-field>
 </template>
 
 <script>
 export default {
-  props: ['value', 'hint', 'label', 'required', 'editable'],
+  props: ['value', 'hint', 'label', 'required', 'editable', 'autofocus', 'error', 'errormsgs'],
 
   // use data to avoid mutating the prop
   data () {

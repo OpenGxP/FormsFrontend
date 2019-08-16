@@ -1,12 +1,12 @@
 <template>
-  <v-row>
-    <v-col
+
+  <v-layout wrap>
+    <v-flex
       xs12
       sm6
-      md5
+      md4
       mx-2
     >
-
       <v-dialog
         ref="dialogDate"
         v-model="modal"
@@ -42,12 +42,12 @@
           >OK</v-btn>
         </v-date-picker>
       </v-dialog>
-    </v-col>
+    </v-flex>
 
-    <v-col
+    <v-flex
       xs12
-      sm6
-      md5
+      sm4
+      md4
       mx-2
     >
       <v-dialog
@@ -74,7 +74,7 @@
           full-width
           use-seconds
           scrollable
-          format="24hr"
+          format="24h"
           @change="eventHandler"
         >
           <v-spacer></v-spacer>
@@ -90,8 +90,94 @@
           >OK</v-btn>
         </v-time-picker>
       </v-dialog>
-    </v-col>
-  </v-row>
+    </v-flex>
+
+    <!--
+    <v-flex
+      xs12
+      sm4
+      md4
+      mx-2
+    >
+      <v-dialog
+        ref="dialog3"
+        v-model="modal3"
+        :return-value.sync="timeIn"
+        persistent
+        full-width
+        width="290px"
+      >
+        <template v-slot:activator="{ on }">
+          <v-text-field
+            v-model="timeIn"
+            label="Picker in dialog"
+            append-icon="event"
+            readonly
+            v-on="on"
+            @click:append="modal3 = true"
+          ></v-text-field>
+        </template>
+
+        <v-sheet v-if="modal3">
+          <v-time-picker
+            v-if="select"
+            v-model="timeIn"
+            full-width
+            use-seconds
+            scrollable
+            @change="eventHandler"
+          >
+            <v-spacer></v-spacer>
+            <v-btn
+              text
+              color="primary"
+              @click="select = !select"
+            >Switch</v-btn>
+
+            <v-btn
+              text
+              color="primary"
+              @click="modal3 = false"
+            >Cancel</v-btn>
+            <v-btn
+              text
+              color="primary"
+              @click="$refs.dialog3.save(timeIn)"
+            >OK</v-btn>
+
+          </v-time-picker>
+
+          <v-date-picker
+            v-else
+            v-model="dateIn"
+            scrollable
+            @change="eventHandler"
+          >
+            <v-spacer></v-spacer>
+            <v-btn
+              text
+              color="primary"
+              @click="modal3 = false"
+            >Cancel</v-btn>
+            <v-btn
+              text
+              color="primary"
+              @click="$refs.Dialog3.save(dateIn)"
+            >OK</v-btn>
+            <v-btn
+              text
+              color="primary"
+              @click="select = !select"
+            >OK</v-btn>
+          </v-date-picker>
+        </v-sheet>
+
+      </v-dialog>
+    </v-flex>
+    -->
+
+  </v-layout>
+
 </template>
 
 <script>
@@ -104,6 +190,7 @@ export default {
       timeIn: this.dateTimeProp ? this.dateTimeProp.substring(11, 19) : '',
       modal: false,
       modal2: false,
+      modal3: false,
       select: true
     }
   },
@@ -123,6 +210,9 @@ export default {
   },
 
   methods: {
+    handleInput (e) {
+      this.$emit('change-value', this.datetime)
+    },
     eventHandler (e) {
       this.$emit('change-val', this.datetime)
     }
@@ -143,6 +233,7 @@ export default {
     }
   }
 }
+// '2019-07-26T13:46:25.340722Z'
 </script>
 
 <style>

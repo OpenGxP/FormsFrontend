@@ -13,11 +13,8 @@
           :key="index"
         >
           <v-flex>
-            <v-card
-              color="#d3d3d3"
-              class="pa-2"
-            >
-              <v-form>
+            <v-card class="pa-2">
+              <v-form @input="handleChange">
                 <v-layout wrap>
                   <v-flex
                     xs12
@@ -25,10 +22,13 @@
                     md4
                     class="px-2"
                   >
+                  <!-- field step -->
                     <v-text-field
                       v-model="step.step"
-                      label="ID"
+                      :label="meta.step.verbose_name"
                       @blur="$v.step.$touch()"
+                      :disabled="!meta.step.editable"
+                      :hint="meta.step.help_text"
                     ></v-text-field>
                   </v-flex>
 
@@ -38,10 +38,13 @@
                     md4
                     class="px-2"
                   >
+                    <!-- field role -->
                     <v-select
-                      :items="roles"
+                      :items="meta.role.lookup.data"
                       v-model="step.role"
-                      label="Role"
+                      :label="meta.role.verbose_name"
+                      :disabled="!meta.role.editable"
+                      :hint="meta.role.help_text"
                     ></v-select>
                   </v-flex>
 
@@ -51,13 +54,15 @@
                     md4
                     class="px-2"
                   >
+                    <!-- field predecessors -->
                     <v-select
                       v-if="index !== 0"
                       :items="predecessors"
                       v-model="step.predecessors"
-                      label="Predecessors"
+                      :label="meta.predecessors.verbose_name"
                       multiple
-                      :disabled="index === 0"
+                      :disabled="index === 0 || !meta.predecessors.editable"
+                      :hint="meta.predecessors.help_text"
                     ></v-select>
                   </v-flex>
 
@@ -67,15 +72,19 @@
                     md9
                     class="px-2"
                   >
+                    <!-- field text -->
                     <v-textarea
                       v-model="step.text"
-                      label="Instruction text"
+                      :label="meta.text.verbose_name"
                       auto-grow
                       clearable
                       rows="1"
+                      :disabled="!meta.text.editable"
+                      :hint="meta.text.help_text"
                     ></v-textarea>
                   </v-flex>
 
+                  <!-- field electronic signature -->
                   <!--
                   <v-flex
                     xs12
@@ -127,22 +136,29 @@
 import { required } from 'vuelidate/lib/validators'
 
 export default {
+  props: ['data', 'meta'],
+
   data () {
     return {
       steps: [
         {
-          step: '1',
+          step: '',
           role: '',
           predecessors: [],
-          text: ''
+          text: '',
+          sequence: 0
           // electronicSignature: false
         }
       ],
-      roles: [
-        'all',
-        'franz',
-        'hans',
-        'tanz'
+      defaultSteps: [
+        {
+          step: '',
+          role: '',
+          predecessors: [],
+          text: '',
+          sequence: 0
+          // electronicSignature: false
+        }
       ]
     }
   },
@@ -180,19 +196,44 @@ export default {
   methods: {
     // TODO: Build validation
     add () {
-      this.steps.push({
-        step: '',
-        role: '',
-        predecessors: '',
-        text: ''
-        // electronicSignature: false
-      })
+      // check if there is an empty step field
+      if (!this.steps.map(x => x.step).includes('')) {
+        this.steps.push({
+          step: '',
+          role: '',
+          predecessors: '',
+          text: '',
+          sequence: Math.max.apply(Math, this.steps.map(x => x.sequence)) + 1
+          // electronicSignature: false
+        })
+      }
     },
     remove (index) {
       this.steps.splice(index, 1)
     },
     submitStep () {
       this.$v.touch()
+    },
+    handleChange (e) {
+      this.$emit('input', this.steps)
+    },
+    reset () {
+      this.steps = this.defaultSteps.slice()
+    }
+  },
+
+  watch: {
+    data: {
+      immediate: true,
+      handler (newVal) {
+        // check if value of prop data, if emtpy assign default value (empty step)
+        if (newVal.length === 0) this.steps = this.defaultSteps.slice()
+        else if (this.steps !== newVal) {
+          // if there is more than one step, sort arry by sequence
+          if (newVal.length > 1) this.steps = newVal.sort((a, b) => (a.sequence > b.sequence) ? 1 : ((b.sequence > a.sequence) ? -1 : 0))
+          else this.steps = newVal
+        }
+      }
     }
   }
 }

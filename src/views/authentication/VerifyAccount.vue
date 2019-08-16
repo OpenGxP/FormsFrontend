@@ -10,7 +10,8 @@
       <v-flex
         xs12
         sm8
-        md6
+        md8
+        lg4
       >
         <v-card class="elevation-12">
 

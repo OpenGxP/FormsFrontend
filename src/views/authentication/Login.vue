@@ -6,12 +6,16 @@
     <v-layout
       align-center
       justify-center
+      wrap
     >
+
       <v-flex
         xs12
         sm8
-        md4
+        md8
+        lg4
       >
+        <div class="display-3 text-center pb-12 hidden-sm-and-down">OpenGxP FORMS</div>
         <v-card class="elevation-12">
           <v-card-title
             primary-title
@@ -46,23 +50,20 @@
                 @click:append="show1 = !show1"
                 @keyup.enter="login()"
               ></v-text-field>
+              <p class="text-right">
+                <router-link
+                  style="text-decoration: none;"
+                  to="/recoveraccount"
+                >Forgot your password?</router-link>
+              </p>
             </v-form>
           </v-card-text>
-          <v-card-actions class="justify-center">
+          <v-card-actions class="justify-center pb-6">
             <v-btn
               @click="login"
               color="primary"
             >Login</v-btn>
           </v-card-actions>
-
-          <p
-            class="text-center pb-2"
-          >
-            <router-link
-              style="text-decoration: none;"
-              to="/recoveraccount"
-            >Forgot your password?</router-link>
-          </p>
         </v-card>
       </v-flex>
     </v-layout>
@@ -93,7 +94,9 @@ export default {
           if (resp.data.initial_password) {
             this.$router.push('/newpassword')
           } else {
+            this.$store.dispatch('initialize')
             this.$store.dispatch('get')
+            this.$store.commit('login')
             this.$router.push('/')
           }
         })

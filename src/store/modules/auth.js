@@ -24,7 +24,6 @@ const actions = {
         withCredentials: true
       })
         .then(resp => {
-          commit('login')
           dispatch('getToken')
           // dispatch('initialize')
           dispatch(USER_REQUEST, {

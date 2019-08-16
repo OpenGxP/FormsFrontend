@@ -10,7 +10,8 @@
       <v-flex
         xs12
         sm8
-        md4
+        md8
+        lg4
       >
         <v-card class="elevation-12">
 
@@ -62,7 +63,7 @@
           </v-card-actions>
 
           <p
-            class="text-center pb-2"
+            class="text-center py-6"
           >
             <router-link
               style="text-decoration: none;"

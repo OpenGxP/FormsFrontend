@@ -9,6 +9,7 @@ import NewPassword from '@/views/authentication/NewPassword'
 import Logs from '@/views/logs/Logs'
 import LogInstance from '@/views/logs/LogInstance'
 import Test from '@/views/Test'
+import Calendar from '@/views/Calendar'
 import MasterData from '@/views/administration/MasterData'
 import MasterDataInstance from '@/views/administration/MasterDataInstance'
 import NotFound from '@/components/404.vue'
@@ -56,6 +57,12 @@ export default new Router({
       path: '/profile',
       name: 'profile',
       component: Profile,
+      beforeEnter: ifAuthenticated
+    },
+    {
+      path: '/calendar',
+      name: 'calendar',
+      component: Calendar,
       beforeEnter: ifAuthenticated
     },
     {

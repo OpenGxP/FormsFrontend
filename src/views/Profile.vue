@@ -5,7 +5,7 @@
 </template>
 
 <script>
-import ProfileWrapper from '@/components/ProfileWrapper'
+import ProfileWrapper from '@/components/UserProfile'
 
 export default {
   components: {

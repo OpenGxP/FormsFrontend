@@ -1,30 +1,45 @@
 <template>
   <div>
 
+    <!-- main drawer -->
     <app-navigation-drawer
-      :drawer="drawer"
+      v-model="drawer"
       :user="user"
-      @input="drawer = $event"
     ></app-navigation-drawer>
+
+    <!-- temp mobile drawer -->
+    <v-navigation-drawer
+      v-model="drawer2"
+      app
+      right
+    >
+      <v-list dense>
+        <v-list-item to="/profile">
+          <v-list-item-action>
+            <v-icon>person</v-icon>
+          </v-list-item-action>
+          <v-list-item-content>
+            <v-list-item-title>Profile</v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
+      </v-list>
+
+       <template v-slot:append>
+        <div class="pa-2">
+          <v-btn block @click="logout()">Logout</v-btn>
+        </div>
+      </template>
+    </v-navigation-drawer>
 
     <!-- Toolbar -->
     <v-app-bar
       app
-      color="indigo"
+      color="primary"
       dark
       fixed
       :collapse="!collapse"
     >
       <v-app-bar-nav-icon @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
-      <v-btn
-        text
-        icon
-        exact
-        @click="collapse = !collapse"
-      >
-        <v-icon v-if="collapse">chevron_left</v-icon>
-        <v-icon v-else>chevron_right</v-icon>
-      </v-btn>
       <v-toolbar-title>
         <router-link
           to="/"
@@ -33,7 +48,9 @@
       </v-toolbar-title>
 
       <v-spacer></v-spacer>
+
       <v-btn
+        class="hidden-sm-and-down"
         text
         to="/profile"
         v-if="user && collapse"
@@ -42,12 +59,14 @@
       >
         <v-icon>person</v-icon>&nbsp;&nbsp;&nbsp;{{text}}
       </v-btn>
+
       <v-tooltip
         bottom
         v-if="collapse"
       >
         <template v-slot:activator="{ on }">
           <v-btn
+            class="hidden-sm-and-down"
             icon
             v-on="on"
             @click="logout()"
@@ -57,6 +76,15 @@
         </template>
         <span>Logout</span>
       </v-tooltip>
+
+      <v-btn
+        class="hidden-md-and-up"
+        icon
+        @click.stop="drawer2 = !drawer2"
+      >
+        <v-icon>more_vert</v-icon>
+      </v-btn>
+
     </v-app-bar>
   </div>
 </template>
@@ -70,7 +98,8 @@ export default {
     mini: false,
     uuser: '',
     text: '',
-    collapse: true
+    collapse: true,
+    drawer2: false
   }),
 
   props: {

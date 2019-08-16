@@ -9,11 +9,12 @@
       fluid
       grid-list-md
     >
-    {{dt}}
-      <app-date-time-picker
+    <v-btn @click="activate({mode: 'warning', text: 'eofkoefoef'})"></v-btn>
+    <!--<app-graph></app-graph>-->
+      <!--<app-date-time-picker
         :dateTimeProp="dt"
         @change-val="dt = $event"
-      ></app-date-time-picker>
+      ></app-date-time-picker>-->
       <!--<app-workflow-designer></app-workflow-designer>-->
       <!--<app-navigation-grid></app-navigation-grid>-->
     </v-container>
@@ -24,6 +25,8 @@
 import AppDateTimePicker from '@/components/inputs/AppDateTimePicker'
 import AppWorkflowDesigner from '@/components/inputs/AppWorkflowDesigner'
 import AppNavigationGrid from '@/components/AppNavigationGrid.vue'
+import AppGraph from '@/components/AppGraph.vue'
+import { mapActions } from 'vuex'
 
 export default {
   data () {
@@ -35,7 +38,16 @@ export default {
   components: {
     appDateTimePicker: AppDateTimePicker,
     appWorkflowDesigner: AppWorkflowDesigner,
-    appNavigationGrid: AppNavigationGrid
+    appNavigationGrid: AppNavigationGrid,
+    appGraph: AppGraph
+  },
+
+  methods: {
+    ...mapActions({
+      show: 'global/overlay/show',
+      hide: 'global/banner/hide',
+      activate: 'global/overlay/activate'
+    })
   }
 }
 </script>

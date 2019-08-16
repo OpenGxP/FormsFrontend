@@ -6,8 +6,11 @@
         :hint="hint"
         :required="required"
         :disabled="!editable"
+        :autofocus="autofocus"
         :type="show ? 'text' : 'password'"
         :append-icon="show ? 'visibility' : 'visibility_off'"
+        :error="error"
+        :error-messages="errormsgs"
         @click:append="show = !show"
         clearable
     ></v-text-field>
@@ -15,7 +18,7 @@
 
 <script>
 export default {
-  props: ['value', 'hint', 'label', 'required', 'editable'],
+  props: ['value', 'hint', 'label', 'required', 'editable', 'autofocus', 'error', 'errormsgs'],
 
   // use data to avoid mutating the prop
   data () {

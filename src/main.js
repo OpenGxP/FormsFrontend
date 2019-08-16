@@ -21,7 +21,7 @@ Vue.use(vuelidate)
 
 // configure axios
 Vue.prototype.$http = axios
-axios.defaults.baseURL = 'https://staging.opengxp.com/api'
+axios.defaults.baseURL = (process.env.NODE_ENV === 'development') ? 'http://127.0.0.1:8000' : 'https://staging.opengxp.com/api'
 axios.defaults.withCredentials = true
 
 // interceptors
@@ -38,7 +38,7 @@ axios.interceptors.response.use(resp => {
 })
 
 // heartbeat
-heartbeat()
+// heartbeat()
 
 new Vue({
   vuetify,

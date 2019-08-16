@@ -1,6 +1,6 @@
 <template>
   <v-navigation-drawer
-    v-model="drawer"
+    v-model="data"
     app
     fixed
     :mini-variant="mini"
@@ -38,23 +38,23 @@
     >
 
       <!-- Drawer content -->
-      <template v-for="(value, key, index) in baseData">
+      <template v-for="(data, key, index) in baseData">
 
         <v-list-group
           :key="index"
-          prepend-icon="storage"
-          value="true"
+          :prepend-icon="mini ? storage : null"
         >
           <template v-slot:activator>
             <v-list-item-content>
-              <v-list-item-title>{{value.title}}</v-list-item-title>
+              <v-list-item-title>{{data.title}}</v-list-item-title>
             </v-list-item-content>
           </template>
 
-          <!-- v-if="$can('all', 'global') || $can('read', `${item.title}log`)" -->
+          <!-- TODO: replace v-if with computed property -->
           <v-list-item
-            v-for="(v, k, i) in value.subjects"
+            v-for="(v, k, i) in data.subjects"
             :key="i"
+            v-if="$can('all', 'global') || $can('read', `${k}`)"
             router
             :to="`/api/${key}/${k}`"
           >
@@ -75,11 +75,13 @@
 
 <script>
 export default {
-  props: ['drawer'],
+  props: ['value'],
 
   data () {
     return {
-      mini: false
+      data: this.value,
+      mini: false,
+      storage: 'storage'
     }
   },
 
@@ -97,7 +99,17 @@ export default {
 
   methods: {
     eventHandler (e) {
-      this.$emit('change', e)
+      this.$emit('input', this.data)
+    }
+  },
+
+  // sync changes from parent
+  watch: {
+    value: {
+      immediate: true,
+      handler (newVal) {
+        this.data = newVal
+      }
     }
   }
 }

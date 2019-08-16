@@ -1,10 +1,16 @@
 <template>
-  <div>
+  <!-- tabindex to make div focusable -->
+  <div
+    ref="main"
+    tabindex="0"
+    @keyup.67="newItem()"
+    @keyup.69="editItem()"
+  >
 
     <!-- toolbar -->
     <v-toolbar
       dark
-      color="grey"
+      color="primary"
       fixed
     >
 
@@ -69,7 +75,7 @@
             icon
             v-on="on"
             @click="newVersion()"
-            :disabled="activeSelection"
+            :disabled="activeSelection || allowedNewVersion"
           >
             <v-icon>plus_one</v-icon>
           </v-btn>
@@ -169,7 +175,8 @@
           <v-checkbox
             class="pl-5"
             label="Dense"
-            v-model="dense"
+            :input-value="dense"
+            @change="tableSettings({ dense: !dense })"
           ></v-checkbox>
 
         </v-card-title>
@@ -182,23 +189,34 @@
           :search="search"
           :dense="dense"
           item-key="unique"
-          show-select
+          :show-select="tableSelect"
+          :single-select="tableSelect"
           multi-sort
-          single-select
-          class="elevation-1"
+          class="elevation-1 tbl"
           @click:row="rowSingleSelect"
+          @dblclick:row="editItem()"
         >
 
           <template v-slot:item.status="{ item }">
-            <v-chip
-              :color="getColor(item.status)"
-              dark
-            >{{ item.status }}</v-chip>
+            <v-chip :color="getColor(item.status)">{{ item.status }}</v-chip>
+          </template>
+
+          <template v-slot:item.initial_password="{ item }">
+            <v-icon
+              v-text="item.initial_password ? 'done' : 'clear'"
+              :color="item.initial_password ? 'green' : 'red'"
+            ></v-icon>
+          </template>
+
+          <template v-slot:item.ldap="{ item }">
+            <v-icon
+              v-text="item.ldap ? 'done' : 'clear'"
+              :color="item.ldap ? 'green' : 'red'"
+            ></v-icon>
           </template>
 
           <template v-slot:no-results>
             <v-alert
-              :value="true"
               color="error"
               icon="warning"
             >
@@ -208,7 +226,6 @@
 
           <template v-slot:no-data>
             <v-alert
-              :value="true"
               color="error"
               icon="warning"
             >
@@ -221,11 +238,19 @@
         <v-dialog
           v-model="dialog"
           max-width="800px"
+          persistent
         >
           <!-- header -->
           <v-card>
             <v-card-title>
               <span class="headline">{{ formTitle }}</span>
+              <v-spacer></v-spacer>
+              <v-btn
+                icon
+                @click="dialog = false"
+              >
+                <v-icon>cancel</v-icon>
+              </v-btn>
             </v-card-title>
             <!-- body -->
             <v-card-text>
@@ -236,7 +261,7 @@
                     xs12
                     sm12
                     md12
-                    v-for="field in formFields"
+                    v-for="(field, index) in formFields"
                     :key="field.name"
                   >
                     <!-- bool -->
@@ -258,19 +283,45 @@
                       @input="editedItem[field.name] = $event"
                     ></permission-allocation>
                     <!-- Workflows -->
-                    <app-workflow-designer v-else-if="field.verbose_name === 'Workflow'"></app-workflow-designer>
-                    <!-- select -->
-                    <app-combo-box
-                      v-else-if="field.lookup !== null"
-                      v-model="editedItem[field.name]"
-                      :items="field.lookup['data']"
-                      :label="field.verbose_name"
-                      :hint="field.help_text"
-                      :required="field.required"
-                      :editable="field.editable"
-                      :multiple="field.lookup['multi']"
-                    >
-                    </app-combo-box>
+                    <app-workflow-designer
+                      v-else-if="field.name === 'steps'"
+                      :meta="field"
+                      :data="editedItem[field.name]"
+                      @input="editedItem[field.name] = $event"
+                    ></app-workflow-designer>
+                    <!-- lookups -->
+                    <template v-else-if="field.lookup !== null">
+                      <!-- select -->
+                      <app-select
+                        v-if="field.lookup.method === 'select'"
+                        v-model="editedItem[field.name]"
+                        :items="field.lookup['data']"
+                        :label="field.verbose_name"
+                        :hint="field.help_text"
+                        :required="field.required"
+                        :editable="editedIndex !== -1 ? field.editable : true"
+                        :multiple="field.lookup['multi']"
+                        :autofocus="index === 0"
+                        :error="errorMsgs[field.name] ? true : false"
+                        :errormsgs="errorMsgs[field.name] ? errorMsgs[field.name] : []"
+                      >
+                      </app-select>
+                      <!-- select -->
+                      <app-combo-box
+                        v-else-if="field.lookup.method === 'new'"
+                        v-model="editedItem[field.name]"
+                        :items="field.lookup['data']"
+                        :label="field.verbose_name"
+                        :hint="field.help_text"
+                        :required="field.required"
+                        :editable="editedIndex !== -1 ? field.editable : true"
+                        :multiple="field.lookup['multi']"
+                        :autofocus="index === 0"
+                        :error="errorMsgs[field.name] ? true : false"
+                        :errormsgs="errorMsgs[field.name] ? errorMsgs[field.name] : []"
+                      >
+                      </app-combo-box>
+                    </template>
                     <!-- password -->
                     <app-password-field
                       v-else-if="field.data_type === 'PasswordField'"
@@ -278,17 +329,24 @@
                       :label="field.verbose_name"
                       :hint="field.help_text"
                       :required="field.required"
-                      :editable="field.editable"
+                      :editable="editedIndex !== -1 ? field.editable : true"
+                      :autofocus="index === 0"
+                      :error="errorMsgs[field.name] ? true : false"
+                      :errormsgs="errorMsgs[field.name] ? errorMsgs[field.name] : []"
                     >
                     </app-password-field>
                     <!-- text -->
+                    <!-- TODO: support for @keyup.enter="save" -->
                     <app-text-field
                       v-else
                       v-model="editedItem[field.name]"
                       :label="field.verbose_name"
                       :hint="field.help_text"
                       :required="field.required"
-                      :editable="field.editable"
+                      :editable="editedIndex !== -1 ? field.editable : true"
+                      :autofocus="index === 0"
+                      :error="errorMsgs[field.name] ? true : false"
+                      :errormsgs="errorMsgs[field.name] ? errorMsgs[field.name] : []"
                     >
                     </app-text-field>
                   </v-flex>
@@ -324,8 +382,10 @@ import axios from 'axios'
 import AppDateTimePicker from '@/components/inputs/AppDateTimePicker'
 import AppComboBox from '@/components/inputs/AppComboBox'
 import AppTextField from '@/components/inputs/AppTextField'
+import AppSelect from '@/components/inputs/AppSelect'
 import AppPasswordField from '@/components/inputs/AppPasswordField'
-import { mapActions } from 'vuex'
+import { mapGetters, mapActions } from 'vuex'
+
 import PermissionAllocation from '@/components/inputs/PermissionAllocation'
 import AppWorkflowDesigner from '@/components/inputs/AppWorkflowDesigner'
 
@@ -334,12 +394,13 @@ export default {
 
   data () {
     return {
+      mode: null,
       loaded: false,
       search: '',
       headers: [],
       items: [],
       selected: [],
-      dense: false,
+      // dense: false,
       dialog: false,
       editedIndex: -1,
       formFields: [],
@@ -348,6 +409,7 @@ export default {
       meta: {},
       postConfig: {},
       veditable: false,
+      errorMsgs: {},
       allowedTransistions: {
         draft: ['circulation'],
         circulation: ['reject', 'approve'],
@@ -371,6 +433,7 @@ export default {
   components: {
     appDateTimePicker: AppDateTimePicker,
     appComboBox: AppComboBox,
+    appSelect: AppSelect,
     appTextField: AppTextField,
     appPasswordField: AppPasswordField,
     permissionAllocation: PermissionAllocation,
@@ -378,6 +441,13 @@ export default {
   },
 
   computed: {
+    ...mapGetters({
+      // table session settings
+      dense: 'session/dense'
+    }),
+    tableSelect () {
+      return this.$route.params.category !== 'logs'
+    },
     formTitle () {
       return this.editedIndex === -1 ? 'New Item' : 'Edit Item'
     },
@@ -395,12 +465,18 @@ export default {
       if (!this.config['version']) return false
       if (this.selected[0]['status'] === 'draft') return false
       return true
+    },
+    allowedNewVersion () {
+      if (!this.config['version']) return false
+      if (this.selected[0]['status'] !== 'draft') return false
+      return true
     }
   },
 
   watch: {
     dialog (val) {
       val || this.close()
+      if (!val) this.errorMsgs = {}
     }
   },
 
@@ -411,13 +487,16 @@ export default {
     ]),
     ...mapActions({
       // snackbar
-      activate: 'snackbar/activate'
+      activate: 'snackbar/activate',
+      // table session settings
+      tableSettings: 'session/setTable'
     }),
     convert (obj, config) {
       // iterate fields
       for (let [key, value] of Object.entries(obj)) {
         // check for lookup field
-        if (key in config) {
+        // TODO: this is a workaround to determine if object has children
+        if (key in config && 'lookup' in config[key]) {
           // convert multi look up only
           if (config[key]['lookup'] !== null) {
             if (config[key]['lookup']['multi'] === true) {
@@ -461,22 +540,10 @@ export default {
       axios.get(`/meta/${this.vlink}${getMeta}`)
         .then(resp => {
           // assign meta
-          const _meta = resp.data.get
           this.meta = resp.data.get
 
-          // assign headers
-          const _headers = []
-          for (let key of Object.keys(_meta)) {
-            if (_meta[key]['render'] === true) {
-              let obj = Object.assign({}, _meta[key])
-              obj['text'] = _meta[key]['verbose_name']
-              obj['value'] = key
-              _headers.push(obj)
-            }
-          }
-          // this.headers = _headers
-
           // assign fields to render dialoge
+          // assigns according data type to fields
           this.postConfig = resp.data.post
           const postFields = resp.data.post
           const formFields = []
@@ -487,8 +554,14 @@ export default {
             formFields.push(field)
             if (postFields[keyField]['data_type'] === 'BooleanField') {
               initItem[keyField] = false
+            } else if (!('data_type' in postFields[keyField])) {
+              initItem[keyField] = []
             } else if (postFields[keyField]['data_type'] === 'CharField' && postFields[keyField]['lookup'] !== null) {
-              if (postFields[keyField]['lookup']['multi'] === true) initItem[keyField] = []
+              if (postFields[keyField]['lookup']['multi'] === true) {
+                initItem[keyField] = []
+              } else {
+                initItem[keyField] = ''
+              }
             } else {
               initItem[keyField] = ''
             }
@@ -525,7 +598,7 @@ export default {
           // set laoding state
           this.loaded = true
         })
-        .catch(err => { })
+        .catch(err => { this.activate({ color: 'error', error: err.response.data }) })
     },
     inlineEditItem (item) {
       this.editedIndex = this.items.indexOf(item)
@@ -533,10 +606,15 @@ export default {
       this.dialog = true
     },
     editItem () {
-      let item = this.convert(this.selected[0], this.postConfig)
-      this.editedIndex = this.items.indexOf(item)
-      this.editedItem = Object.assign({}, item)
-      this.dialog = true
+      // || this.selected[0].status !== 'draft'
+      if (this.selected.length === 0) {
+        this.activate({ color: 'error', message: `There is no selected item to edit OR the selection is invalid` })
+      } else {
+        let item = this.convert(this.selected[0], this.postConfig) // this.selected[0] //
+        this.editedIndex = this.items.indexOf(item)
+        this.editedItem = Object.assign({}, item)
+        this.dialog = true
+      }
     },
     newItem () {
       this.editedItem = Object.assign({}, this.defaultItem)
@@ -556,7 +634,7 @@ export default {
         })
         .catch(err => {
           // snackbar
-          this.activate({ color: 'error', message: err.response.data.validation_errors[0] })
+          this.activate({ color: 'error', message: err.response.data.validation_errors.join('\r\n') })
         })
     },
     deleteItem () {
@@ -574,7 +652,7 @@ export default {
           this.load()
         })
         .catch((err) => {
-          this.activate({ color: 'success', error: err.response.data.validation_errors[0] })
+          this.activate({ color: 'success', error: err.response.data.validation_errors.join('\r\n') })
         })
     },
     load () {
@@ -585,17 +663,12 @@ export default {
       setTimeout(() => {
         this.editedItem = Object.assign({}, this.defaultItem)
         this.editedIndex = -1
+        this.selected = []
       }, 300)
     },
     save () {
       let item = this.selected[0]
       const payload = this.editedItem
-      // strip empty fields from payload
-      for (let propName in payload) {
-        if (payload[propName] === null || payload[propName] === undefined || payload[propName] === '') {
-          delete payload[propName]
-        }
-      }
       if (this.editedIndex > -1) {
         // TODO: find better solution
         var u = ''
@@ -615,9 +688,21 @@ export default {
             this.close()
             this.load()
           })
-          .catch(err => { })
+          .catch(err => {
+            if ('validation_errors' in err.response.data) this.activate({ color: 'error', message: err.response.data.validation_errors.join('\r\n') })
+            else {
+              this.activate({ color: 'error', message: 'Missing and / or wrong data' })
+              this.errorMsgs = err.response.data
+            }
+          })
       } else {
         // new item
+        // strip empty fields from payload
+        for (let propName in payload) {
+          if (payload[propName] === null || payload[propName] === undefined || payload[propName] === '') {
+            delete payload[propName]
+          }
+        }
         axios({
           method: 'post',
           url: `/${this.inpt}`,
@@ -629,11 +714,11 @@ export default {
             this.load()
           })
           .catch(err => {
-            let errMsg = ''
-            for (let key of Object.keys(err.response.data)) {
-              errMsg += key + ' : ' + err.response.data[key] + '; '
+            if ('validation_errors' in err.response.data) this.activate({ color: 'error', message: err.response.data.validation_errors.join('\r\n') })
+            else {
+              this.activate({ color: 'error', message: 'Missing and / or wrong data' })
+              this.errorMsgs = err.response.data
             }
-            this.activate({ color: 'error', message: errMsg })
           })
       }
     },
@@ -674,12 +759,14 @@ export default {
   mounted () {
     this.inpt = this.config['url']['rel']
     this.load()
+    // focus main div
+    this.$refs.main.focus()
   }
 }
 </script>
 
 <style>
-tbody tr:nth-of-type(odd) {
-  background-color: rgba(0, 0, 0, 0.05);
+tbody.tbl tr:nth-of-type(odd) {
+  background-color: rgba(48, 48, 48);
 }
 </style>
