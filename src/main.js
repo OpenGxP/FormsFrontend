@@ -38,7 +38,7 @@ axios.interceptors.response.use(resp => {
 })
 
 // heartbeat
-// heartbeat()
+heartbeat()
 
 new Vue({
   vuetify,
