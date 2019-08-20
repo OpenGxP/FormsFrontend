@@ -32,6 +32,23 @@
         inset
         vertical
       ></v-divider>
+      <!-- view -->
+      <v-tooltip
+        bottom
+        v-if="config['post'] && ($can('all', 'global') || $can('view', vlink))"
+      >
+        <template v-slot:activator="{ on }">
+          <v-btn
+            icon
+            v-on="on"
+            :disabled="activeSelection"
+            @click="viewItem()"
+          >
+            <v-icon>visibility</v-icon>
+          </v-btn>
+        </template>
+        <span>View</span>
+      </v-tooltip>
       <!-- add -->
       <v-tooltip
         bottom
@@ -267,19 +284,22 @@
                     <!-- bool -->
                     <v-switch
                       v-if="field.data_type === 'BooleanField'"
-                      :label="field.verbose_name"
                       v-model="editedItem[field.name]"
+                      :label="field.verbose_name"
+                      :disabled="view"
                     ></v-switch>
                     <!-- DateTime -->
                     <app-date-time-picker
                       v-else-if="field.data_type === 'DateTimeField'"
                       :dateTimeProp="editedItem[field.name]"
+                      :editable="view ? false : editedIndex !== -1 ? field.editable : true"
                       @change-val="editedItem[field.name]=$event"
                     ></app-date-time-picker>
                     <!-- Permissions -->
                     <permission-allocation
                       v-else-if="field.verbose_name === 'Permissions'"
                       :value="editedItem[field.name]"
+                      :editable="view ? false : editedIndex !== -1 ? field.editable : true"
                       @input="editedItem[field.name] = $event"
                     ></permission-allocation>
                     <!-- Workflows -->
@@ -287,6 +307,7 @@
                       v-else-if="field.name === 'steps'"
                       :meta="field"
                       :data="editedItem[field.name]"
+                      :editable="view ? false : editedIndex !== -1 ? field.editable : true"
                       @input="editedItem[field.name] = $event"
                     ></app-workflow-designer>
                     <!-- lookups -->
@@ -299,7 +320,7 @@
                         :label="field.verbose_name"
                         :hint="field.help_text"
                         :required="field.required"
-                        :editable="editedIndex !== -1 ? field.editable : true"
+                        :editable="view ? false : editedIndex !== -1 ? field.editable : true"
                         :multiple="field.lookup['multi']"
                         :autofocus="index === 0"
                         :error="errorMsgs[field.name] ? true : false"
@@ -314,7 +335,7 @@
                         :label="field.verbose_name"
                         :hint="field.help_text"
                         :required="field.required"
-                        :editable="editedIndex !== -1 ? field.editable : true"
+                        :editable="view ? false : editedIndex !== -1 ? field.editable : true"
                         :multiple="field.lookup['multi']"
                         :autofocus="index === 0"
                         :error="errorMsgs[field.name] ? true : false"
@@ -329,7 +350,7 @@
                       :label="field.verbose_name"
                       :hint="field.help_text"
                       :required="field.required"
-                      :editable="editedIndex !== -1 ? field.editable : true"
+                      :editable="view ? false : editedIndex !== -1 ? field.editable : true"
                       :autofocus="index === 0"
                       :error="errorMsgs[field.name] ? true : false"
                       :errormsgs="errorMsgs[field.name] ? errorMsgs[field.name] : []"
@@ -343,7 +364,7 @@
                       :label="field.verbose_name"
                       :hint="field.help_text"
                       :required="field.required"
-                      :editable="editedIndex !== -1 ? field.editable : true"
+                      :editable="view ? false : editedIndex !== -1 ? field.editable : true"
                       :autofocus="index === 0"
                       :error="errorMsgs[field.name] ? true : false"
                       :errormsgs="errorMsgs[field.name] ? errorMsgs[field.name] : []"
@@ -394,6 +415,7 @@ export default {
 
   data () {
     return {
+      view: false,
       mode: null,
       loaded: false,
       search: '',
@@ -476,7 +498,10 @@ export default {
   watch: {
     dialog (val) {
       val || this.close()
-      if (!val) this.errorMsgs = {}
+      if (!val) {
+        this.errorMsgs = {}
+        this.view = false
+      }
     }
   },
 
@@ -615,6 +640,10 @@ export default {
         this.editedItem = Object.assign({}, item)
         this.dialog = true
       }
+    },
+    viewItem () {
+      this.view = true
+      this.editItem()
     },
     newItem () {
       this.editedItem = Object.assign({}, this.defaultItem)

@@ -44,6 +44,13 @@
               <v-list-item-title>{{ item.key }}</v-list-item-title>
               <v-list-item-subtitle>{{ item.value }}</v-list-item-subtitle>
             </v-list-item-content>
+            <v-list-item-action v-if="item.value === 'Yes' || item.value === 'No'">
+              <v-switch
+              v-model="myval"
+                true-value="Yes"
+                false-value="No"
+              ></v-switch>
+            </v-list-item-action>
           </v-list-item>
 
         </v-list>
@@ -144,6 +151,7 @@ export default {
 
   data () {
     return {
+      myval: '',
       items: [],
       dialog: false,
       info: '',
@@ -188,6 +196,11 @@ export default {
           this.err = true
           this.activate({ color: 'error', message: this.errMsgs })
         })
+    },
+    edit () {
+      const key = 'gui.dense'
+      const payload = { value: 'Yes' }
+      this.$http.patch(`user/profile/${key}`, payload)
     }
   },
 
