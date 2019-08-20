@@ -46,9 +46,6 @@
             </v-list-item-content>
             <v-list-item-action v-if="item.value === 'Yes' || item.value === 'No'">
               <v-switch
-              v-model="myval"
-                true-value="Yes"
-                false-value="No"
               ></v-switch>
             </v-list-item-action>
           </v-list-item>
