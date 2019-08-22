@@ -5,6 +5,7 @@
     tabindex="0"
     @keyup.67="newItem()"
     @keyup.69="editItem()"
+    @keyup.86="viewItem()"
   >
 
     <!-- toolbar -->
@@ -293,6 +294,7 @@
                       v-else-if="field.data_type === 'DateTimeField'"
                       :dateTimeProp="editedItem[field.name]"
                       :editable="view ? false : editedIndex !== -1 ? field.editable : true"
+                      :label="field.verbose_name"
                       @change-val="editedItem[field.name]=$event"
                     ></app-date-time-picker>
                     <!-- Permissions -->
@@ -307,7 +309,7 @@
                       v-else-if="field.name === 'steps'"
                       :meta="field"
                       :data="editedItem[field.name]"
-                      :editable="view ? false : editedIndex !== -1 ? field.editable : true"
+                      :editable="!view"
                       @input="editedItem[field.name] = $event"
                     ></app-workflow-designer>
                     <!-- lookups -->
@@ -386,6 +388,7 @@
               <v-btn
                 color="blue darken-1"
                 text
+                :disabled="view"
                 @click="save"
               >Save</v-btn>
             </v-card-actions>
@@ -435,7 +438,7 @@ export default {
       allowedTransistions: {
         draft: ['circulation'],
         circulation: ['reject', 'approve'],
-        productive: ['reject', 'block', 'inactivate', 'archive'],
+        productive: ['block', 'inactivate', 'archive'],
         blocked: ['approve'],
         inactive: ['blocked'],
         archived: []
@@ -501,6 +504,7 @@ export default {
       if (!val) {
         this.errorMsgs = {}
         this.view = false
+        this.$refs.main.focus()
       }
     }
   },

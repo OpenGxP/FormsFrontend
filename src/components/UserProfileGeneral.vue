@@ -36,21 +36,84 @@
             </v-list-item-action>
           </v-list-item>
 
-          <v-list-item
-            v-for="item in items"
-            :key="item.unique"
-          >
+          <v-list-item>
             <v-list-item-content>
-              <v-list-item-title>{{ item.key }}</v-list-item-title>
-              <v-list-item-subtitle>{{ item.value }}</v-list-item-subtitle>
+              <v-list-item-title>Timezone</v-list-item-title>
+              <v-list-item-subtitle v-text="timezone"></v-list-item-subtitle>
             </v-list-item-content>
-            <v-list-item-action v-if="item.value === 'Yes' || item.value === 'No'">
-              <v-switch
-              ></v-switch>
+            <v-list-item-action>
+              <v-dialog
+                v-model="dia"
+                width="500"
+              >
+                <template v-slot:activator="{ on }">
+                  <v-btn
+                    dark
+                    color="primary"
+                    v-on="on"
+                  >
+                    Set timezone
+                  </v-btn>
+                </template>
+                <v-card>
+                  <v-card-title
+                    primary-title
+                    class="justify-center"
+                  >
+                    <span class="title font-weight-light">Set Timezone</span>
+                  </v-card-title>
+                  <v-card-text>
+                    <v-form class="px-3">
+                      <v-combobox
+                        v-model="ct"
+                        :items="timezones"
+                      ></v-combobox>
+                    </v-form>
+                  </v-card-text>
+                  <v-card-actions class="justify-center">
+                    <v-btn
+                      @click="dia = false"
+                      color="primary"
+                    >Cancel</v-btn>
+                    <v-btn
+                      @click="ss"
+                      color="primary"
+                    >Save</v-btn>
+                  </v-card-actions>
+                </v-card>
+              </v-dialog>
             </v-list-item-action>
           </v-list-item>
 
         </v-list>
+
+        <!--
+        <v-row
+          v-for="item in items"
+          :key="item.unique"
+        >
+          <v-col>
+            <v-switch
+              v-if="item.value === 'Yes' || item.value === 'No'"
+              v-model="myval"
+              true-value="Yes"
+              false-value="No"
+              :label="item.key"
+            ></v-switch>
+            <v-select
+              v-else-if="item.key === 'loc.timezone'"
+              v-model="item.key"
+              :items="timezones"
+              :label="item.key"
+            ></v-select>
+            <v-text-field
+              v-else
+              v-model="item.value"
+              :label="item.key"
+            ></v-text-field>
+          </v-col>
+        </v-row>
+        -->
 
       </v-flex>
 
@@ -148,9 +211,13 @@ export default {
 
   data () {
     return {
+      ct: '',
+      timezone: '',
+      timezones: [],
       myval: '',
       items: [],
       dialog: false,
+      dia: false,
       info: '',
       err: false,
       errMsgs: [],
@@ -198,6 +265,13 @@ export default {
       const key = 'gui.dense'
       const payload = { value: 'Yes' }
       this.$http.patch(`user/profile/${key}`, payload)
+    },
+    ss () {
+      if (this.ct) {
+        this.timezone = this.ct
+        this.$http.patch('user/profile/loc.timezone', { value: this.timezone })
+      }
+      this.dia = false
     }
   },
 
@@ -212,6 +286,15 @@ export default {
     dark (val) {
       this.$vuetify.theme.dark = val
       // this.$vuetify.theme.themes.dark.primary = '#4caf50'
+    },
+    items: {
+      immediate: true,
+      handler (val) {
+        if (this.itmes) {
+          let timezone = this.items.find(obj => obj.key === 'loc.timezone')
+          this.timezone = timezone.value
+        }
+      }
     }
   },
 
@@ -219,6 +302,8 @@ export default {
     this.info = this.$store.getters.currentUser
     this.$http.get('user/profile')
       .then(resp => { this.items = resp.data })
+    this.$http.get('meta/set_timezone')
+      .then(resp => { this.timezones = resp.data.post.value.lookup.data })
   }
 }
 </script>

@@ -10,7 +10,7 @@
     <!-- temp mobile drawer -->
     <v-navigation-drawer
       v-model="drawer2"
-      app
+      absolute
       right
     >
       <v-list dense>
