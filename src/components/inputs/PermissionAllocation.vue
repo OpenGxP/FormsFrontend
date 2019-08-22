@@ -22,6 +22,7 @@
             hide-details
             clearable
             clear-icon="close"
+            :disabled="!editable"
           ></v-text-field>
         </v-flex>
       </v-layout>
@@ -38,6 +39,7 @@
             selected-color="indigo"
             open-on-click
             selectable
+            item-disabled="locked"
             :search="search"
             :open.sync="open"
             @input="handleChange"
@@ -88,6 +90,7 @@
     <v-card-actions style="padding-top: 30px">
       <v-btn
         text
+        :disabled="!editable"
         @click="tree = []"
       >
         Reset
@@ -107,7 +110,7 @@
 import axios from 'axios'
 
 export default {
-  props: ['value'],
+  props: ['value', 'editable'],
 
   data () {
     return {
@@ -132,6 +135,7 @@ export default {
       return [{
         id: 1,
         name: 'All permissions',
+        locked: !this.editable,
         children
       }]
     },

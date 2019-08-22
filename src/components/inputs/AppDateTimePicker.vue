@@ -3,7 +3,7 @@
     <v-col
       xs12
       sm6
-      md5
+      md6
       mx-2
     >
 
@@ -18,9 +18,10 @@
         <template v-slot:activator="{ on }">
           <v-text-field
             v-model="dateIn"
-            label="Picker in dialog"
+            :label="`${label} date`"
             append-icon="event"
             readonly
+            :disabled="!editable"
             @click:append="modal = true"
           ></v-text-field>
         </template>
@@ -38,7 +39,7 @@
           <v-btn
             text
             color="primary"
-            @click="$refs.dialogDate.save(dateIn)"
+            @click="saveDate(dateIn)"
           >OK</v-btn>
         </v-date-picker>
       </v-dialog>
@@ -47,7 +48,7 @@
     <v-col
       xs12
       sm6
-      md5
+      md6
       mx-2
     >
       <v-dialog
@@ -61,10 +62,11 @@
         <template v-slot:activator="{ on }">
           <v-text-field
             v-model="timeIn"
-            label="Picker in dialog"
+            :label="`${label} time`"
             append-icon="access_time"
             readonly
             v-on="on"
+            :disabled="!editable"
             @click:append="modal2 = true"
           ></v-text-field>
         </template>
@@ -86,7 +88,7 @@
           <v-btn
             text
             color="primary"
-            @click="$refs.dialog.save(timeIn)"
+            @click="saveTime(timeIn)"
           >OK</v-btn>
         </v-time-picker>
       </v-dialog>
@@ -96,7 +98,7 @@
 
 <script>
 export default {
-  props: ['dateTimeProp'],
+  props: ['dateTimeProp', 'editable', 'label'],
 
   data () {
     return {
@@ -124,6 +126,14 @@ export default {
 
   methods: {
     eventHandler (e) {
+      this.$emit('change-val', this.datetime)
+    },
+    saveTime (time) {
+      this.$refs.dialog.save(time)
+      this.$emit('change-val', this.datetime)
+    },
+    saveDate (date) {
+      this.$refs.dialogDate.save(date)
       this.$emit('change-val', this.datetime)
     }
   },

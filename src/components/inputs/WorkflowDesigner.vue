@@ -30,6 +30,7 @@
                     <v-text-field
                       v-model="node.step"
                       label="ID"
+                      :disabled="!editable"
                     ></v-text-field>
                   </v-flex>
 
@@ -43,6 +44,7 @@
                       :items="groups"
                       v-model="node.groups"
                       label="Groups"
+                      :disabled="!editable"
                     ></v-select>
                   </v-flex>
 
@@ -57,7 +59,7 @@
                       v-model="node.predecessors"
                       label="Predecessors"
                       multiple
-                      :disabled="index === 0"
+                      :disabled="index === 0 || !editable"
                     ></v-select>
                   </v-flex>
 
@@ -73,11 +75,12 @@
                       auto-grow
                       clearable
                       rows="1"
+                      :disabled="!editable"
                     ></v-textarea>
                   </v-flex>
 
                   <v-btn
-                    v-if="index !== 0"
+                    v-if="index !== 0 && editable"
                     absolute
                     dark
                     fab
@@ -99,6 +102,7 @@
       </template>
 
       <v-btn
+        v-if="editable"
         icon
         @click="add"
       >
@@ -111,7 +115,7 @@
 
 <script>
 export default {
-  props: ['meta', 'data'],
+  props: ['meta', 'data', 'editable'],
 
   data () {
     return {

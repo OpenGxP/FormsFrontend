@@ -22,12 +22,12 @@
                     md4
                     class="px-2"
                   >
-                  <!-- field step -->
+                    <!-- field step -->
                     <v-text-field
                       v-model="step.step"
                       :label="meta.step.verbose_name"
                       @blur="$v.step.$touch()"
-                      :disabled="!meta.step.editable"
+                      :disabled="!meta.step.editable || !editable"
                       :hint="meta.step.help_text"
                     ></v-text-field>
                   </v-flex>
@@ -43,7 +43,7 @@
                       :items="meta.role.lookup.data"
                       v-model="step.role"
                       :label="meta.role.verbose_name"
-                      :disabled="!meta.role.editable"
+                      :disabled="!meta.role.editable || !editable"
                       :hint="meta.role.help_text"
                     ></v-select>
                   </v-flex>
@@ -57,11 +57,11 @@
                     <!-- field predecessors -->
                     <v-select
                       v-if="index !== 0"
-                      :items="predecessors"
+                      :items="predecessors.filter(ele => ele !== step.step)"
                       v-model="step.predecessors"
                       :label="meta.predecessors.verbose_name"
                       multiple
-                      :disabled="index === 0 || !meta.predecessors.editable"
+                      :disabled="index === 0 || !meta.predecessors.editable || !editable || !step.step"
                       :hint="meta.predecessors.help_text"
                     ></v-select>
                   </v-flex>
@@ -79,7 +79,7 @@
                       auto-grow
                       clearable
                       rows="1"
-                      :disabled="!meta.text.editable"
+                      :disabled="!meta.text.editable || !editable"
                       :hint="meta.text.help_text"
                     ></v-textarea>
                   </v-flex>
@@ -100,7 +100,7 @@
                   -->
 
                   <v-btn
-                    v-if="index !== 0"
+                    v-if="index !== 0 && editable"
                     absolute
                     dark
                     fab
@@ -122,6 +122,7 @@
       </template>
 
       <v-btn
+        v-if="editable"
         icon
         @click="add"
       >
@@ -136,7 +137,7 @@
 import { required } from 'vuelidate/lib/validators'
 
 export default {
-  props: ['data', 'meta'],
+  props: ['data', 'meta', 'editable'],
 
   data () {
     return {
@@ -209,7 +210,19 @@ export default {
       }
     },
     remove (index) {
+      if (this.steps[index]['step']) {
+        const kill = this.steps[index]['step']
+        for (let ele of this.steps) {
+          if (ele.predecessors.includes(kill)) {
+            let index = this.steps.indexOf(ele)
+            this.steps[index].predecessors = this.steps[index].predecessors.filter(item => item !== kill)
+          }
+        }
+      }
       this.steps.splice(index, 1)
+    },
+    pre (self) {
+      //
     },
     submitStep () {
       this.$v.touch()
