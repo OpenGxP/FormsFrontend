@@ -34,7 +34,6 @@
           <v-treeview
             v-model="tree"
             :items="items"
-            activatable
             active-class="grey lighten-4 indigo--text"
             selected-color="indigo"
             open-on-click
@@ -155,14 +154,18 @@ export default {
   },
 
   watch: {
-    permissions (val) {
-      this.types = val.reduce((acc, cur) => {
-        const type = cur.model
+    permissions: {
+      handler (val) {
+        console.log('permissions', val)
+        this.types = val.reduce((acc, cur) => {
+          const type = cur.model
 
-        if (!acc.includes(type)) acc.push(type)
+          if (!acc.includes(type)) acc.push(type)
 
-        return acc
-      }, []).sort()
+          return acc
+        }, []).sort()
+      },
+      deep: true
     },
     value: {
       immediate: true,
@@ -213,7 +216,7 @@ export default {
   mounted () {
     if (this.permissions.length) return
     return axios.get('/admin/permissions')
-      .then(resp => { this.permissions = resp.data })
+      .then(resp => { this.permissions = resp.data.results })
   }
 }
 </script>

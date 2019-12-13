@@ -24,9 +24,12 @@
         </v-list-item>
       </v-list>
 
-       <template v-slot:append>
+      <template v-slot:append>
         <div class="pa-2">
-          <v-btn block @click="logout()">Logout</v-btn>
+          <v-btn
+            block
+            @click="logout()"
+          >Logout</v-btn>
         </div>
       </template>
     </v-navigation-drawer>
@@ -35,30 +38,108 @@
     <v-app-bar
       app
       color="primary"
-      dark
       fixed
       :collapse="!collapse"
     >
       <v-app-bar-nav-icon @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
-      <v-toolbar-title>
-        <router-link
-          to="/"
-          style="text-decoration: none; color: white;"
-        >OpenGxP</router-link>
+      <v-toolbar-title
+        class="ml-0 pl-4"
+        style="width: 300px"
+      >
+        <span class="hidden-sm-and-down">
+          <router-link
+            to="/"
+            style="text-decoration: none; color: white;"
+          >OpenGxP</router-link>
+        </span>
+
       </v-toolbar-title>
+
+      <app-search></app-search>
 
       <v-spacer></v-spacer>
 
-      <v-btn
-        class="hidden-sm-and-down"
-        text
-        to="/profile"
-        v-if="user && collapse"
-        @mouseover="text = 'my profile'"
-        @mouseleave="text = user"
+      <!-- <v-btn @click="test()">test</v-btn>-->
+
+      <v-tooltip
+        bottom
+        v-if="collapse"
       >
-        <v-icon>person</v-icon>&nbsp;&nbsp;&nbsp;{{text}}
-      </v-btn>
+        <template v-slot:activator="{ on }">
+          <v-btn
+            class="hidden-sm-and-down"
+            icon
+            v-on="on"
+            @click="toInbox()"
+          >
+            <v-badge v-if="numInbox"
+              overlap
+              color="warning"
+            >
+              <template v-slot:badge>{{numInbox}}</template>
+              <v-icon>mail</v-icon>
+            </v-badge>
+            <v-icon v-else>mail</v-icon>
+          </v-btn>
+        </template>
+        <span>Inbox</span>
+      </v-tooltip>
+
+      <v-tooltip
+        bottom
+        v-if="user && collapse"
+      >
+        <template v-slot:activator="{ on }">
+          <v-btn
+            class="hidden-sm-and-down"
+            icon
+            v-on="on"
+            @click="toProfile()"
+          >
+            <v-icon>person</v-icon>
+          </v-btn>
+        </template>
+        <span>Profile</span>
+      </v-tooltip>
+
+      <v-tooltip
+        bottom
+        v-if="collapse"
+      >
+        <template v-slot:activator="{ on }">
+
+          <v-menu
+            offset-y
+            v-on="on"
+          >
+            <template v-slot:activator="{ on }">
+              <v-btn
+                class="hidden-sm-and-down"
+                icon
+                v-on="on"
+              >
+                <v-icon>settings</v-icon>
+              </v-btn>
+            </template>
+            <v-list>
+              <v-list-item
+                v-for="(item, index) in items"
+                :key="index"
+                @click="navigate(item.url)"
+              >
+                <v-list-item-icon>
+                  <v-icon v-text="item.icon"></v-icon>
+                </v-list-item-icon>
+                <v-list-item-content>
+                  <v-list-item-title v-text="item.title"></v-list-item-title>
+                </v-list-item-content>
+              </v-list-item>
+            </v-list>
+          </v-menu>
+
+        </template>
+        <span>Settings</span>
+      </v-tooltip>
 
       <v-tooltip
         bottom
@@ -91,6 +172,8 @@
 
 <script>
 import TheNavigationDrawer from '@/components/TheNavigationDrawer'
+import TheGlobalSearch from '@/components/TheGlobalSearch'
+import { mapGetters, mapActions } from 'vuex'
 
 export default {
   data: () => ({
@@ -99,7 +182,12 @@ export default {
     uuser: '',
     text: '',
     collapse: true,
-    drawer2: false
+    drawer2: false,
+    items: [
+      { title: 'Upcoming Tasks', icon: 'calendar_today', url: '/filter' },
+      { title: 'Assignements', icon: 'assignment_ind', url: '/filter' },
+      { title: 'Show Hotkeys', icon: 'help_outline', url: '/filter' }
+    ]
   }),
 
   props: {
@@ -107,14 +195,18 @@ export default {
   },
 
   components: {
-    appNavigationDrawer: TheNavigationDrawer
+    appNavigationDrawer: TheNavigationDrawer,
+    appSearch: TheGlobalSearch
   },
 
   computed: {
+    ...mapGetters({
+      // session settings
+      numInbox: 'session/inboxItems'
+    }),
     isAuth () {
       return this.$store.getters.isAuthenticated
     },
-
     user () {
       const name = this.uuser
       return `${name.charAt(0).toUpperCase()}${name.slice(1)}`
@@ -122,8 +214,25 @@ export default {
   },
 
   methods: {
+    ...mapActions({
+      // overlay
+      // TODO: richtigen Pfad zu vuex action hinterlegen
+      activate: '/global/overlay/show'
+    }),
+    test () {
+      this.activate()
+    },
     logout () {
       this.$store.dispatch('logout')
+    },
+    toProfile () {
+      this.$router.push({ path: '/profile' })
+    },
+    toInbox () {
+      this.$router.push({ path: '/inbox' })
+    },
+    navigate (path) {
+      this.$router.push({ path: path })
     }
   },
 

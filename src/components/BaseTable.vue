@@ -177,12 +177,64 @@
       </template>
     </v-toolbar>
 
+    <app-filter
+      :dialog="filterDialog"
+      :fields="filterFields"
+      @filterurl="newurl = $event"
+      @close-dialog="filterDialog = $event"
+    ></app-filter>
+
+    <!-- columns -->
+    <v-dialog
+      max-width="400"
+      v-model="columnSelect"
+    >
+      <v-card class="mx-auto">
+
+        <v-list
+          subheader
+          two-line
+          flat
+        >
+          <v-subheader>Visible Columns</v-subheader>
+
+          <v-list-item-group
+            v-model="binaryArrayHeaders"
+            multiple
+          >
+            <!-- 1 -->
+            <v-list-item
+              v-for="(header, index) in headers"
+              :key="index"
+            >
+              <template v-slot:default="{ active, toggle }">
+                <v-list-item-action>
+                  <v-checkbox
+                    v-model="active"
+                    color="primary"
+                    @click="toggle"
+                  ></v-checkbox>
+                </v-list-item-action>
+
+                <v-list-item-content>
+                  <v-list-item-title>{{header.text}}</v-list-item-title>
+                  <v-list-item-subtitle>{{header.value}}</v-list-item-subtitle>
+                </v-list-item-content>
+              </template>
+            </v-list-item>
+
+          </v-list-item-group>
+        </v-list>
+      </v-card>
+    </v-dialog>
+
     <!-- data table wrapper -->
     <template v-if="loaded">
       <v-card>
         <v-card-title>
           {{ config.title }}
           <v-spacer></v-spacer>
+          <!---
           <v-text-field
             v-model="search"
             append-icon="search"
@@ -190,29 +242,52 @@
             single-line
             hide-details
           ></v-text-field>
-          <v-checkbox
-            class="pl-5"
-            label="Dense"
-            :input-value="dense"
-            @change="tableSettings({ dense: !dense })"
-          ></v-checkbox>
+          --->
+          <template v-if="headers.length">
+
+            <v-checkbox
+              class="mx-2"
+              label="Dense"
+              :input-value="dense"
+              @change="tableSettings({ dense: !dense })"
+            ></v-checkbox>
+            <v-btn
+              class="mx-2"
+              icon
+              @click="filterDialog = true"
+            >
+              <v-icon>filter_list</v-icon>
+            </v-btn>
+            <v-btn
+              icon
+              @click="columnSelect = true"
+            >
+              <v-icon>expand_more</v-icon>
+            </v-btn>
+          </template>
 
         </v-card-title>
 
         <!-- data table -->
         <v-data-table
           v-model="selected"
-          :headers="headers"
+          :headers="selectedHeaders"
           :items="items"
           :search="search"
           :dense="dense"
           item-key="unique"
           :show-select="tableSelect"
           :single-select="tableSelect"
-          multi-sort
+          :multi-sort="false"
           class="elevation-1 tbl"
           @click:row="rowSingleSelect"
           @dblclick:row="editItem()"
+          :options.sync="options"
+          :server-items-length="recordCount"
+          :loading="loading"
+          :footer-props="{
+            itemsPerPageOptions: [5, 10, 15, 25]
+          }"
         >
 
           <template v-slot:item.status="{ item }">
@@ -252,6 +327,16 @@
           </template>
 
         </v-data-table>
+
+        <!-- signature dialog -->
+        <app-signature
+          :dialog="sigDialog.dialog"
+          :sig="sig.sig"
+          :com="sig.com"
+          @close-dialog="sigDialog.dialog = $event"
+          @get-signature="save3($event)"
+        ></app-signature>
+
         <!-- dialog -->
         <v-dialog
           v-model="dialog"
@@ -413,11 +498,19 @@ import { mapGetters, mapActions } from 'vuex'
 import PermissionAllocation from '@/components/inputs/PermissionAllocation'
 import AppWorkflowDesigner from '@/components/inputs/AppWorkflowDesigner'
 
+import AppFilter from '@/components/FilterDialog'
+import AppSignature from '@/components/TheSignature'
+
 export default {
   name: 'BaseDataTable',
 
   data () {
     return {
+      sigDialog: {
+        dialog: false,
+        payload: {}
+      },
+      newurl: '',
       view: false,
       mode: null,
       loaded: false,
@@ -426,7 +519,15 @@ export default {
       items: [],
       selected: [],
       // dense: false,
+      sig: {
+        sig: 'logging',
+        com: 'none'
+      },
+      filterDialog: false,
+      misc: {},
+      filter: '',
       dialog: false,
+      columnSelect: false,
       editedIndex: -1,
       formFields: [],
       editedItem: {},
@@ -442,7 +543,12 @@ export default {
         blocked: ['approve'],
         inactive: ['blocked'],
         archived: []
-      }
+      },
+      recordCount: 0,
+      options: {},
+      loading: false,
+      modus: '',
+      binaryArrayHeaders: []
     }
   },
 
@@ -462,7 +568,9 @@ export default {
     appTextField: AppTextField,
     appPasswordField: AppPasswordField,
     permissionAllocation: PermissionAllocation,
-    appWorkflowDesigner: AppWorkflowDesigner
+    appWorkflowDesigner: AppWorkflowDesigner,
+    appFilter: AppFilter,
+    appSignature: AppSignature
   },
 
   computed: {
@@ -470,6 +578,9 @@ export default {
       // table session settings
       dense: 'session/dense'
     }),
+    selectedHeaders () {
+      return this.headers.filter((header, index) => this.binaryArrayHeaders.includes(index))
+    },
     tableSelect () {
       return this.$route.params.category !== 'logs'
     },
@@ -495,6 +606,10 @@ export default {
       if (!this.config['version']) return false
       if (this.selected[0]['status'] !== 'draft') return false
       return true
+    },
+    filterFields () {
+      // return this.formFields.map(field => field.name)
+      return this.headers.map(field => field.value)
     }
   },
 
@@ -505,6 +620,17 @@ export default {
         this.errorMsgs = {}
         this.view = false
         this.$refs.main.focus()
+      }
+    },
+    options: {
+      handler () {
+        this.loadData()
+      },
+      deep: true
+    },
+    newurl (val) {
+      if (val !== '') {
+        this.loadData(true)
       }
     }
   },
@@ -570,6 +696,7 @@ export default {
         .then(resp => {
           // assign meta
           this.meta = resp.data.get
+          this.misc = resp.data.misc
 
           // assign fields to render dialoge
           // assigns according data type to fields
@@ -602,15 +729,38 @@ export default {
           this.loadData()
         })
     },
-    loadData () {
-      axios.get(`/${this.inpt}`)
+    loadData (newFilter = false) {
+      let path = ''
+      let { page, itemsPerPage, sortBy, sortDesc } = this.options
+      // pagination
+      let offset = 0
+      if (page > 1) {
+        offset = (page - 1) * itemsPerPage
+      }
+      if (newFilter) { offset = 0 }
+      // sorting
+      // TODO: check if value for sortBy !== undefined does not work
+      if (sortBy !== undefined) {
+        if (sortBy[0] !== undefined) {
+          if (sortDesc[0]) {
+            path = `/${this.inpt}?limit=${itemsPerPage}&offset=${offset}&order_by=${sortBy[0]}.asc`
+          } else {
+            path = `/${this.inpt}?limit=${itemsPerPage}&offset=${offset}&order_by=${sortBy[0]}.desc`
+          }
+        } else { path = `/${this.inpt}?limit=${itemsPerPage}&offset=${offset}` }
+      } else {
+        path = `/${this.inpt}?limit=${itemsPerPage}&offset=${offset}`
+      }
+      if (this.newurl !== '') path = `${path}&${this.newurl}`
+      axios.get(path)
         .then(resp => {
           // bind items and add index for select
-          this.items = resp.data
+          this.recordCount = resp.data.count
+          this.items = resp.data.results
           // test if resp is empty
           const _headers = []
-          if (resp.data[0]) {
-            for (let key of Object.keys(resp.data[0])) {
+          if (resp.data.results[0]) {
+            for (let key of Object.keys(resp.data.results[0])) {
               if (this.meta.hasOwnProperty(key)) {
                 if (this.meta[key]['render']) {
                   _headers.push(
@@ -624,6 +774,7 @@ export default {
             }
           }
           if (_headers) this.headers = _headers
+          this.binaryArrayHeaders = Array.from(Array(this.headers.length).keys())
           // set laoding state
           this.loaded = true
         })
@@ -654,7 +805,9 @@ export default {
       this.dialog = true
     },
     openLog () {
-      this.$router.push({ name: 'logInstance', params: { instance: this.vlink } })
+      // if no object is selected move to according log overview
+      if (!this.selected.length) this.$router.push({ path: `/api/logs/${this.vlink}` })
+      // TODO: else show log entries of selected object
     },
     changeStatus (target) {
       let item = this.selected[0]
@@ -671,6 +824,16 @@ export default {
         })
     },
     deleteItem () {
+      if (this.misc.delete.com !== 'none' || this.misc.delete.sig !== 'logging') {
+        this.sig.sig = this.misc.delete.sig
+        this.sig.com = this.misc.delete.com
+        this.modus = 'delete'
+        this.sigDialog.dialog = true
+      } else { this.del() }
+    },
+    del (sig = {}) {
+      let payload = {}
+      if (sig) Object.assign(payload, sig)
       const item = this.selected[0]
       // TODO: find better solution
       var u = ''
@@ -679,7 +842,12 @@ export default {
       } else {
         u = `/${this.inpt}/${item.lifecycle_id}/${item.version}`
       }
-      axios.delete(u)
+      axios({
+        method: 'delete',
+        url: u,
+        data: payload,
+        withCredentials: true
+      })
         .then((resp) => {
           this.activate({ color: 'success', message: 'Object was successfully deleted' })
           this.load()
@@ -687,9 +855,12 @@ export default {
         .catch((err) => {
           this.activate({ color: 'success', error: err.response.data.validation_errors.join('\r\n') })
         })
+      this.sigDialog.dialog = false
     },
     load () {
+      this.loading = true
       this.loadMeta()
+      this.loading = false
     },
     close () {
       this.dialog = false
@@ -700,8 +871,32 @@ export default {
       }, 300)
     },
     save () {
+      // edit
+      if (this.selected.length > 0) {
+        if (this.misc.edit.com === 'none' && this.misc.edit.sig === 'logging') {
+          this.save2()
+        } else {
+          this.sig.sig = this.misc.edit.sig
+          this.sig.com = this.misc.edit.com
+          this.modus = 'edit'
+          this.sigDialog.dialog = true
+        }
+      } else {
+        if (this.misc.add.com === 'none' && this.misc.add.sig === 'logging') {
+          this.save2()
+        } else {
+          this.sig.sig = this.misc.add.sig
+          this.sig.com = this.misc.add.com
+          this.modus = 'add'
+          this.sigDialog.dialog = true
+        }
+      }
+    },
+    save2 (sig = {}) {
       let item = this.selected[0]
-      const payload = this.editedItem
+      let payload = this.editedItem
+      // if payload of signature != empty, assign sig to payload of api call
+      if (sig) Object.assign(payload, sig)
       if (this.editedIndex > -1) {
         // TODO: find better solution
         var u = ''
@@ -754,6 +949,11 @@ export default {
             }
           })
       }
+      this.sigDialog.dialog = false
+    },
+    save3 (sig) {
+      if (this.modus !== 'edit' && this.modus !== 'add') this.del(sig)
+      else this.save2(sig)
     },
     getColor (status) {
       if (status === 'productive') {

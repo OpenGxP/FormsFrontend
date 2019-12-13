@@ -12,7 +12,6 @@
         v-model="modal"
         :return-value.sync="dateIn"
         persistent
-        full-width
         width="290px"
       >
         <template v-slot:activator="{ on }">
@@ -56,7 +55,6 @@
         v-model="modal2"
         :return-value.sync="timeIn"
         persistent
-        full-width
         width="290px"
       >
         <template v-slot:activator="{ on }">
@@ -73,7 +71,6 @@
         <v-time-picker
           v-if="modal2"
           v-model="timeIn"
-          full-width
           use-seconds
           scrollable
           format="24hr"

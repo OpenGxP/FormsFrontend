@@ -43,6 +43,7 @@
         <v-list-group
           :key="index"
           :prepend-icon="mini ? storage : null"
+          no-action
         >
           <template v-slot:activator>
             <v-list-item-content>
@@ -59,9 +60,7 @@
             :to="`/api/${key}/${k}`"
           >
 
-            <v-list-item-content>
-              <v-list-item-title v-text="v.title"></v-list-item-title>
-            </v-list-item-content>
+            <v-list-item-title v-text="v.title"></v-list-item-title>
 
           </v-list-item>
 

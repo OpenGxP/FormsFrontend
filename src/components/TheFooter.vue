@@ -51,7 +51,7 @@
                     class="white--text"
                     :color="hover ? 'indigo lighten-1' : 'indigo'"
                   >
-                    <v-card-text v-text="hover ? 'Report it now!' : 'Found a bug?'" :class="hover ? ['orange--text', 'title'] : null"></v-card-text>
+                    <v-card-text v-text="hover ? 'Report it now!' : 'Found a bug?'" :class="hover ? ['orange--text'] : null"></v-card-text>
                   </v-card>
                 </v-hover>
               </v-flex>
