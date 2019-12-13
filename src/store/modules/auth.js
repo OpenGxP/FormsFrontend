@@ -2,6 +2,7 @@ import axios from 'axios'
 import router from '@/router'
 import ability from '@/ability'
 import { USER_REQUEST } from '../actions/user'
+// import { GET_INBOX } from '../actions/session'
 
 const state = {
   auth: false,
@@ -25,6 +26,7 @@ const actions = {
       })
         .then(resp => {
           dispatch('getToken')
+          dispatch('session/getInbox')
           // dispatch('initialize')
           dispatch(USER_REQUEST, {
             'user': user,
@@ -69,12 +71,14 @@ const actions = {
         }
         commit('setToken', token)
       })
-  },
+  }
+  /*
   setNewPassword: ({ commit }, credentials) => {
     axios.patch('fwadad', credentials)
       .then(resp => {})
       .catch(err => {})
   }
+  */
 }
 
 const mutations = {
