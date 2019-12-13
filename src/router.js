@@ -14,10 +14,12 @@ import MasterData from '@/views/administration/MasterData'
 import MasterDataInstance from '@/views/administration/MasterDataInstance'
 import NotFound from '@/components/404.vue'
 import zz from '@/views/zz'
+import filter from '@/views/filter'
 import Profile from '@/views/Profile'
+import Inbox from '@/views/Inbox'
 
 import Category from '@/views/test/Category'
-import Instance from '@/views/test/Instance'
+// import Instance from '@/views/test/Instance'
 import Id from '@/views/test/Id'
 
 Vue.use(Router)
@@ -57,6 +59,12 @@ export default new Router({
       path: '/profile',
       name: 'profile',
       component: Profile,
+      beforeEnter: ifAuthenticated
+    },
+    {
+      path: '/inbox',
+      name: 'inbox',
+      component: Inbox,
       beforeEnter: ifAuthenticated
     },
     {
@@ -117,6 +125,10 @@ export default new Router({
     {
       path: '/zz',
       component: zz
+    },
+    {
+      path: '/filter',
+      component: filter
     },
     {
       path: '/api/:category',

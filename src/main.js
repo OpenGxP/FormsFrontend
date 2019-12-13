@@ -7,6 +7,7 @@ import ability from './ability'
 // import './registerServiceWorker'
 import axios from 'axios'
 import vuelidate from 'vuelidate'
+import VueHotkey from 'v-hotkey'
 import { heartbeat } from './helpers/heartbeat'
 
 import vuetify from './plugins/vuetify'
@@ -18,6 +19,9 @@ Vue.use(abilitiesPlugin, ability)
 
 // vuelidate
 Vue.use(vuelidate)
+
+// hotkeys
+Vue.use(VueHotkey)
 
 // configure axios
 Vue.prototype.$http = axios

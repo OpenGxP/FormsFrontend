@@ -1,7 +1,7 @@
 <template>
-  <v-app>
+  <v-app v-hotkey="keymap">
     <app-banner></app-banner>
-    <app-toolbar v-if="isAuthenticated" />
+    <app-toolbar v-if="isAuthenticated && showToolbar" />
     <app-snack-bar></app-snack-bar>
     <app-overlay></app-overlay>
     <v-content>
@@ -21,6 +21,12 @@ import TheBanner from '@/components/globals/TheBanner'
 export default {
   name: 'App',
 
+  data () {
+    return {
+      showToolbar: true
+    }
+  },
+
   components: {
     appToolbar: TheToolBar,
     appFooter: TheFoorter,
@@ -32,6 +38,17 @@ export default {
   computed: {
     isAuthenticated () {
       return this.$store.getters.isAuthenticated
+    },
+    keymap () {
+      return {
+        'shift+space': this.toggle
+      }
+    }
+  },
+
+  methods: {
+    toggle () {
+      this.showToolbar = !this.showToolbar
     }
   },
 
