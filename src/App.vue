@@ -1,32 +1,50 @@
 <template>
-  <div id="app">
-    <div id="nav">
-      <router-link to="/">Home</router-link> |
-      <router-link to="/about">About</router-link>
-    </div>
-    <router-view/>
-  </div>
+  <v-app>
+    <app-banner></app-banner>
+    <app-toolbar v-if="isAuthenticated" />
+    <app-snack-bar></app-snack-bar>
+    <app-overlay></app-overlay>
+    <v-content>
+      <router-view />
+    </v-content>
+    <app-footer></app-footer>
+  </v-app>
 </template>
 
-<style lang="scss">
-#app {
-  font-family: 'Avenir', Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-}
+<script>
+import TheToolBar from '@/components/TheToolBar'
+import TheFoorter from '@/components/TheFooter'
+import TheSnackBar from '@/components/TheSnackBar'
+import TheOverlay from '@/components/TheOverlay'
+import TheBanner from '@/components/globals/TheBanner'
 
-#nav {
-  padding: 30px;
+export default {
+  name: 'App',
 
-  a {
-    font-weight: bold;
-    color: #2c3e50;
+  components: {
+    appToolbar: TheToolBar,
+    appFooter: TheFoorter,
+    appSnackBar: TheSnackBar,
+    appOverlay: TheOverlay,
+    appBanner: TheBanner
+  },
 
-    &.router-link-exact-active {
-      color: #42b983;
+  computed: {
+    isAuthenticated () {
+      return this.$store.getters.isAuthenticated
     }
+  },
+
+  mounted () {
+    // for scoping
+    /*
+    var vm = this
+    window.addEventListener('keyup', function (event) {
+      if (event.keyCode === 112) {
+        vm.newItem()
+      }
+    })
+    */
   }
 }
-</style>
+</script>
