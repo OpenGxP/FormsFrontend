@@ -67,7 +67,7 @@
             />
           </v-col>
           <v-col cols="8">
-            
+
           </v-col>
         </v-row>
       </v-card-text>
@@ -126,42 +126,42 @@
 </template>
 
 <script>
-import { mapActions } from "vuex";
+import { mapActions } from 'vuex'
 
 export default {
-  data() {
+  data () {
     return {
-      question_one: "",
-      answer_one: "",
-      question_two: "",
-      answer_two: "",
-      question_three: "",
-      answer_three: "",
+      question_one: '',
+      answer_one: '',
+      question_two: '',
+      answer_two: '',
+      question_three: '',
+      answer_three: '',
       passwordDialog: false,
       dialog: false,
       dialog2: false,
-      password: "",
+      password: '',
       show: false,
       editable: false
-    };
+    }
   },
 
   methods: {
     ...mapActions({
       // snackbar
-      activate: "snackbar/activate"
+      activate: 'snackbar/activate'
     }),
-    est() {
-      this.dialog2 = false;
-      this.dialog = true;
+    est () {
+      this.dialog2 = false
+      this.dialog = true
     },
-    changeQuestionsRequest() {
-      this.dialog = true;
+    changeQuestionsRequest () {
+      this.dialog = true
     },
-    changeQuestions() {
-      this.dialog = false;
+    changeQuestions () {
+      this.dialog = false
       this.$http
-        .patch("user/change_questions", {
+        .patch('user/change_questions', {
           question_one: this.question_one,
           question_two: this.question_two,
           question_three: this.question_three,
@@ -171,31 +171,31 @@ export default {
           password: this.password
         })
         .then(resp => {
-          this.answer_one = "";
-          this.answer_two = "";
-          this.answer_three = "";
-          this.activate({ color: "success", message: resp.data });
+          this.answer_one = ''
+          this.answer_two = ''
+          this.answer_three = ''
+          this.activate({ color: 'success', message: resp.data })
         })
         .catch(err => {
-          this.activate({ color: "error", message: err.response.data });
-        });
+          this.activate({ color: 'error', message: err.response.data })
+        })
     }
   },
 
   watch: {
-    dialog2(val) {
-      if (!val) this.password = "";
+    dialog2 (val) {
+      if (!val) this.password = ''
     }
   },
 
-  created() {
-    this.$http.get("user/profile_questions").then(resp => {
-      this.question_one = resp.data.question_one;
-      this.question_two = resp.data.question_two;
-      this.question_three = resp.data.question_three;
-    });
+  created () {
+    this.$http.get('user/profile_questions').then(resp => {
+      this.question_one = resp.data.question_one
+      this.question_two = resp.data.question_two
+      this.question_three = resp.data.question_three
+    })
   }
-};
+}
 </script>
 
 <style>

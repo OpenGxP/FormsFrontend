@@ -112,112 +112,116 @@
 </template>
 
 <script>
-import axios from "axios";
-import { mapActions } from "vuex";
+import axios from 'axios'
+import { mapActions } from 'vuex'
 
 export default {
-  data() {
+  data () {
     return {
-      ct: "",
-      timezone: "",
+      ct: '',
+      timezone: '',
       timezones: [],
-      myval: "",
+      myval: '',
       items: [],
       dialog: false,
       dia: false,
-      info: "",
+      info: '',
       err: false,
       errMsgs: [],
-      password: "",
-      password_new: "",
-      password_new_verification: "",
+      password: '',
+      password_new: '',
+      password_new_verification: '',
       show1: false,
       show2: false,
       dark: this.$vuetify.theme.dark,
       rules: {
-        required: value => !!value || "Required.",
-        min: v => v.length >= 8 || "Min 8 characters",
+        required: value => !!value || 'Required.',
+        min: v => v.length >= 8 || 'Min 8 characters',
         match: () =>
           this.password_new === this.password_new_verification ||
-          "Passwords must match"
+          'Passwords must match'
       }
-    };
+    }
   },
 
   methods: {
     ...mapActions({
-      activate: "snackbar/activate"
+      activate: 'snackbar/activate'
     }),
-    save() {
-      const password = this.password;
-      const password_new = this.password_new;
-      const password_new_verification = this.password_new_verification;
+    save () {
+      const password = this.password
+      const passwordNew = this.password_new
+      const passwordNewVerification = this.password_new_verification
       axios({
-        method: "patch",
-        url: "/user/change_password",
-        data: { password, password_new, password_new_verification },
+        method: 'patch',
+        url: '/user/change_password',
+        data: {
+          password,
+          'password_new': passwordNew,
+          'password_new_verification': passwordNewVerification
+        },
         withCredentials: true
       })
         .then(resp => {
-          this.dialog = false;
+          this.dialog = false
           this.activate({
-            color: "success",
-            message: "password was successfully reset"
-          });
+            color: 'success',
+            message: 'password was successfully reset'
+          })
         })
         .catch(err => {
-          this.errMsgs = err.response.data;
-          this.err = true;
-          this.activate({ color: "error", message: this.errMsgs });
-        });
+          this.errMsgs = err.response.data
+          this.err = true
+          this.activate({ color: 'error', message: this.errMsgs })
+        })
     },
-    edit() {
-      const key = "gui.dense";
-      const payload = { value: "Yes" };
-      this.$http.patch(`user/profile/${key}`, payload);
+    edit () {
+      const key = 'gui.dense'
+      const payload = { value: 'Yes' }
+      this.$http.patch(`user/profile/${key}`, payload)
     },
-    ss() {
+    ss () {
       if (this.ct) {
-        this.timezone = this.ct;
-        this.$http.patch("user/profile/loc.timezone", { value: this.timezone });
+        this.timezone = this.ct
+        this.$http.patch('user/profile/loc.timezone', { value: this.timezone })
       }
-      this.dia = false;
+      this.dia = false
     }
   },
 
   watch: {
-    dialog(val) {
+    dialog (val) {
       if (!val) {
-        this.password = "";
-        this.password_new = "";
-        this.password_new_verification = "";
+        this.password = ''
+        this.password_new = ''
+        this.password_new_verification = ''
       }
     },
-    dark(val) {
-      this.$vuetify.theme.dark = val;
+    dark (val) {
+      this.$vuetify.theme.dark = val
       // this.$vuetify.theme.themes.dark.primary = '#4caf50'
     },
     items: {
       immediate: true,
-      handler(val) {
+      handler (val) {
         if (this.itmes) {
-          let timezone = this.items.find(obj => obj.key === "loc.timezone");
-          this.timezone = timezone.value;
+          let timezone = this.items.find(obj => obj.key === 'loc.timezone')
+          this.timezone = timezone.value
         }
       }
     }
   },
 
-  mounted() {
-    this.info = this.$store.getters.currentUser;
-    this.$http.get("user/profile").then(resp => {
-      this.items = resp.data;
-    });
-    this.$http.get("meta/set_timezone").then(resp => {
-      this.timezones = resp.data.post.value.lookup.data;
-    });
+  mounted () {
+    this.info = this.$store.getters.currentUser
+    this.$http.get('user/profile').then(resp => {
+      this.items = resp.data
+    })
+    this.$http.get('meta/set_timezone').then(resp => {
+      this.timezones = resp.data.post.value.lookup.data
+    })
   }
-};
+}
 </script>
 
 <style>

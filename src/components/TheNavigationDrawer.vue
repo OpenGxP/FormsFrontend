@@ -47,15 +47,16 @@
           </template>
 
           <!-- TODO: replace v-if with computed property -->
-          <v-list-item
-            v-for="(v, k, i) in data.subjects"
-            v-if="$can('all', 'global') || $can('read', `${k}`)"
-            :key="i"
-            router
-            :to="`/api/${key}/${k}`"
-          >
-            <v-list-item-title v-text="v.title" />
-          </v-list-item>
+          <template v-for="(v, k, i) in data.subjects">
+            <v-list-item
+              v-if="$can('all', 'global') || $can('read', `${k}`)"
+              :key="i"
+              router
+              :to="`/api/${key}/${k}`"
+            >
+              <v-list-item-title v-text="v.title" />
+            </v-list-item>
+          </template>
         </v-list-group>
       </template>
     </v-list>

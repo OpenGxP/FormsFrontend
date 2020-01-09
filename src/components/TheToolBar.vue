@@ -106,9 +106,9 @@
 </template>
 
 <script>
-import TheNavigationDrawer from "@/components/TheNavigationDrawer";
-import TheGlobalSearch from "@/components/TheGlobalSearch";
-import { mapGetters, mapActions } from "vuex";
+import TheNavigationDrawer from '@/components/TheNavigationDrawer'
+import TheGlobalSearch from '@/components/TheGlobalSearch'
+import { mapGetters, mapActions } from 'vuex'
 
 export default {
   components: {
@@ -122,27 +122,27 @@ export default {
   data: () => ({
     drawer: false,
     mini: false,
-    uuser: "",
-    text: "",
+    uuser: '',
+    text: '',
     collapse: true,
     drawer2: false,
     items: [
-      { title: "Upcoming Tasks", icon: "calendar_today", url: "/filter" },
-      { title: "Assignements", icon: "assignment_ind", url: "/filter" }
+      { title: 'Upcoming Tasks', icon: 'calendar_today', url: '/filter' },
+      { title: 'Assignements', icon: 'assignment_ind', url: '/filter' }
     ]
   }),
 
   computed: {
     ...mapGetters({
       // session settings
-      numInbox: "session/inboxItems"
+      numInbox: 'inboxItems'
     }),
-    isAuth() {
-      return this.$store.getters.isAuthenticated;
+    isAuth () {
+      return this.$store.getters.isAuthenticated
     },
-    user() {
-      const name = this.uuser;
-      return `${name.charAt(0).toUpperCase()}${name.slice(1)}`;
+    user () {
+      const name = this.uuser
+      return `${name.charAt(0).toUpperCase()}${name.slice(1)}`
     }
   },
 
@@ -150,28 +150,28 @@ export default {
     ...mapActions({
       // overlay
       // TODO: richtigen Pfad zu vuex action hinterlegen
-      activate: "global/overlay/show"
+      activate: 'global/overlay/show'
     }),
-    test() {
-      this.activate();
+    test () {
+      this.activate()
     },
-    logout() {
-      this.$store.dispatch("logout");
+    logout () {
+      this.$store.dispatch('logout')
     },
-    toProfile() {
-      this.$router.push({ path: "/profile" });
+    toProfile () {
+      this.$router.push({ path: '/profile' })
     },
-    toInbox() {
-      this.$router.push({ path: "/inbox" });
+    toInbox () {
+      this.$router.push({ path: '/inbox' })
     },
-    navigate(path) {
-      this.$router.push({ path: path });
+    navigate (path) {
+      this.$router.push({ path: path })
     }
   },
 
-  created() {
-    this.uuser = this.$store.getters.currentUser;
-    this.text = this.uuser;
+  created () {
+    this.uuser = this.$store.getters.currentUser
+    this.text = this.uuser
   }
-};
+}
 </script>

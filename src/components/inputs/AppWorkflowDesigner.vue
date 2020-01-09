@@ -130,6 +130,8 @@
 </template>
 
 <script>
+import { required } from 'vuelidate/lib/validators'
+
 export default {
   props: ['data', 'meta', 'editable'],
 
@@ -164,6 +166,8 @@ export default {
     },
     stepErrors () {
       const errors = []
+      if (!this.$v.step.$dirty) return errors
+      !this.$v.step.required && errors.push('Item is required')
       return errors
     },
     vertices () {
@@ -177,6 +181,12 @@ export default {
         }
       }
       return _edges
+    }
+  },
+
+  validations: {
+    step: {
+      required
     }
   },
 

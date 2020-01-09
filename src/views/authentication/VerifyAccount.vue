@@ -35,7 +35,7 @@
                 md12
               >
                 <v-textarea
-                  v-model="question_one"
+                  v-model="questionOne"
                   clearable
                   label="Question 1"
                   auto-grow
@@ -206,7 +206,7 @@ export default {
       token: '',
       err: false,
       errMsgs: [],
-      question_one: '',
+      questionOne: '',
       answer_one: '',
       question_two: '',
       answer_two: '',
@@ -231,19 +231,20 @@ export default {
     this.token = this.$route.params['token']
     axios.get(this.$route.path)
       .then(resp => {
-        this.question_one = resp.data.question_one,
-        this.question_two = resp.data.question_two,
+        this.questionOne = resp.data.question_one
+        this.question_two = resp.data.question_two
         this.question_three = resp.data.question_three
       })
       .catch(err => {
-        //
+        // TO DO
+        console.log(err)
       })
   },
 
   methods: {
     resetPassword () {
       axios.post(this.$route.path, {
-        answer_one: this.answer_one,
+        answer_one: this.questionOne,
         answer_two: this.answer_two,
         answer_three: this.answer_three,
         password_new: this.password_new,
@@ -253,7 +254,8 @@ export default {
           this.$router.push('/login')
         })
         .catch(err => {
-          //
+          // TO DO
+          console.log(err)
         })
     }
   }

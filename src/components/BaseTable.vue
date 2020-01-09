@@ -136,7 +136,7 @@
 
     <app-filter
       :dialog="filterDialog"
-      :fields="filterFields"
+      :fields="headers"
       @filterurl="newurl = $event"
       @close-dialog="filterDialog = $event"
       @active-flag="activeFilter = $event"
@@ -157,7 +157,6 @@
 
                 <v-list-item-content>
                   <v-list-item-title>{{ header.text }}</v-list-item-title>
-                  <v-list-item-subtitle>{{ header.value }}</v-list-item-subtitle>
                 </v-list-item-content>
               </template>
             </v-list-item>
@@ -189,7 +188,7 @@
               @change="tableSettings({ dense: !dense })"
             />
             <v-btn class="mx-2" tile text @click="filterDialog = true">
-              <v-icon left :color="activeFilter ? 'primary' : 'default'">tune</v-icon> Filter 
+              <v-icon left :color="activeFilter ? 'primary' : 'default'">tune</v-icon> Filter
             </v-btn>
             <v-btn tile text  @click="columnSelect = true">
               <v-icon left>expand_more</v-icon> Columns
@@ -394,22 +393,22 @@
 </template>
 
 <script>
-import axios from "axios";
-import AppDateTimePicker from "@/components/inputs/AppDateTimePicker";
-import AppComboBox from "@/components/inputs/AppComboBox";
-import AppTextField from "@/components/inputs/AppTextField";
-import AppSelect from "@/components/inputs/AppSelect";
-import AppPasswordField from "@/components/inputs/AppPasswordField";
-import { mapGetters, mapActions } from "vuex";
+import axios from 'axios'
+import AppDateTimePicker from '@/components/inputs/AppDateTimePicker'
+import AppComboBox from '@/components/inputs/AppComboBox'
+import AppTextField from '@/components/inputs/AppTextField'
+import AppSelect from '@/components/inputs/AppSelect'
+import AppPasswordField from '@/components/inputs/AppPasswordField'
+import { mapGetters, mapActions } from 'vuex'
 
-import PermissionAllocation from "@/components/inputs/PermissionAllocation";
-import AppWorkflowDesigner from "@/components/inputs/AppWorkflowDesigner";
+import PermissionAllocation from '@/components/inputs/PermissionAllocation'
+import AppWorkflowDesigner from '@/components/inputs/AppWorkflowDesigner'
 
-import AppFilter from "@/components/FilterDialog";
-import AppSignature from "@/components/TheSignature";
+import AppFilter from '@/components/FilterDialog'
+import AppSignature from '@/components/TheSignature'
 
 export default {
-  name: "BaseDataTable",
+  name: 'BaseDataTable',
 
   components: {
     appDateTimePicker: AppDateTimePicker,
@@ -432,29 +431,29 @@ export default {
     }
   },
 
-  data() {
+  data () {
     return {
       activeFilter: false,
       sigDialog: {
         dialog: false,
         payload: {}
       },
-      newurl: "",
+      newurl: '',
       view: false,
       mode: null,
       loaded: false,
-      search: "",
+      search: '',
       headers: [],
       items: [],
       selected: [],
       // dense: false,
       sig: {
-        sig: "logging",
-        com: "none"
+        sig: 'logging',
+        com: 'none'
       },
       filterDialog: false,
       misc: {},
-      filter: "",
+      filter: '',
       dialog: false,
       columnSelect: false,
       editedIndex: -1,
@@ -466,11 +465,11 @@ export default {
       veditable: false,
       errorMsgs: {},
       allowedTransistions: {
-        draft: ["circulation"],
-        circulation: ["reject", "approve"],
-        productive: ["block", "inactivate", "archive"],
-        blocked: ["approve"],
-        inactive: ["blocked"],
+        draft: ['circulation'],
+        circulation: ['reject', 'approve'],
+        productive: ['block', 'inactivate', 'archive'],
+        blocked: ['approve'],
+        inactive: ['blocked'],
         archived: []
       },
       recordCount: 0,
@@ -481,209 +480,207 @@ export default {
         sortDesc: []
       },
       loading: false,
-      modus: "",
+      modus: '',
       binaryArrayHeaders: []
-    };
+    }
   },
 
   computed: {
     ...mapGetters({
       // table session settings
-      dense: "session/dense"
+      dense: 'session/dense'
     }),
-    quickFilters() {
+    quickFilters () {
       const quickFilters = this.headers.filter(
         filter => filter.active === true
-      );
+      )
       if (quickFilters.length >= 1) {
-        let filterString = "";
+        let filterString = ''
         for (let filter of quickFilters) {
           if (filterString) {
-            filterString = `${filterString}&${filter.value}=contains.${filter.quickFilter}`;
+            filterString = `${filterString}&${filter.value}=contains.${filter.quickFilter}`
           } else {
-            filterString = `${filter.value}=contains.${filter.quickFilter}`;
+            filterString = `${filter.value}=contains.${filter.quickFilter}`
           }
         }
-        return `${filterString}&and_or=and`;
+        return `${filterString}&and_or=and`
       }
-      return "";
+      return ''
     },
-    selectedHeaders() {
+    selectedHeaders () {
       return this.headers.filter((header, index) =>
         this.binaryArrayHeaders.includes(index)
-      );
+      )
     },
-    tableSelect() {
-      return this.$route.params.category !== "logs";
+    tableSelect () {
+      return this.$route.params.category !== 'logs'
     },
-    formTitle() {
-      return this.editedIndex === -1 ? "New Item" : "Edit Item";
+    formTitle () {
+      return this.editedIndex === -1 ? 'New Item' : 'Edit Item'
     },
-    roles() {
-      return this.$store.getters.validRoles.map(item => item.role);
+    roles () {
+      return this.$store.getters.validRoles.map(item => item.role)
     },
-    activeSelection() {
+    activeSelection () {
       if (this.selected.length !== 1) {
-        return true;
+        return true
       } else {
-        return false;
+        return false
       }
     },
-    allowedSelection() {
-      if (!this.config["version"]) return false;
-      if (this.selected[0]["status"] === "draft") return false;
-      return true;
+    allowedSelection () {
+      if (!this.config['version']) return false
+      if (this.selected[0]['status'] === 'draft') return false
+      return true
     },
-    allowedNewVersion() {
-      if (!this.config["version"]) return false;
-      if (this.selected[0]["status"] !== "draft") return false;
-      return true;
+    allowedNewVersion () {
+      if (!this.config['version']) return false
+      if (this.selected[0]['status'] !== 'draft') return false
+      return true
     },
-    filterFields() {
+    filterFields () {
       // return this.formFields.map(field => field.name)
-      return this.headers.map(field => field.value);
+      return this.headers.map(field => field.value)
     }
   },
 
   watch: {
-    dialog(val) {
-      val || this.close();
+    dialog (val) {
+      val || this.close()
       if (!val) {
-        this.errorMsgs = {};
-        this.view = false;
-        this.$refs.main.focus();
+        this.errorMsgs = {}
+        this.view = false
+        this.$refs.main.focus()
       }
     },
     options: {
-      handler(newVal, oldVal) {
+      handler (newVal, oldVal) {
         if (
-          newVal.page != oldVal.page ||
-          newVal.itemsPerPage != oldVal.itemsPerPage ||
-          newVal.sortBy != oldVal.sortBy ||
-          newVal.sortDesc != oldVal.sortDesc
+          newVal.page !== oldVal.page ||
+          newVal.itemsPerPage !== oldVal.itemsPerPage ||
+          newVal.sortBy !== oldVal.sortBy ||
+          newVal.sortDesc !== oldVal.sortDesc
         ) {
-          this.loadData();
+          this.loadData()
         }
       },
       deep: true
     },
-    newurl(val) {
-      if (val !== "") {
-        this.loadData(true);
+    newurl (val) {
+      if (val !== '') {
+        this.loadData(true)
       }
     },
-    quickFilters(val) {
-      this.loadData(true);
+    quickFilters (val) {
+      this.loadData(true)
     }
   },
 
   methods: {
-    ...mapActions(["INIT_MASTERDATA", "DELETE_MASTERDATA"]),
+    ...mapActions(['INIT_MASTERDATA', 'DELETE_MASTERDATA']),
     ...mapActions({
       // snackbar
-      activate: "global/snackbar/activate",
+      activate: 'global/snackbar/activate',
       // table session settings
-      tableSettings: "session/setTable"
+      tableSettings: 'session/setTable'
     }),
-    convert(obj, config) {
+    convert (obj, config) {
       // iterate fields
       for (let [key, value] of Object.entries(obj)) {
         // check for lookup field
         // TODO: this is a workaround to determine if object has children
-        if (key in config && "lookup" in config[key]) {
+        if (key in config && 'lookup' in config[key]) {
           // convert multi look up only
-          if (config[key]["lookup"] !== null) {
-            if (config[key]["lookup"]["multi"] === true) {
+          if (config[key]['lookup'] !== null) {
+            if (config[key]['lookup']['multi'] === true) {
               // empty string
               if (value.length === 0) {
-                obj[key] = [];
+                obj[key] = []
                 // no comma separation, single value
-              } else if (value.indexOf(",") === -1) {
-                obj[key] = [value];
+              } else if (value.indexOf(',') === -1) {
+                obj[key] = [value]
                 // comma separation
               } else {
-                obj[key] = value.split(",");
+                obj[key] = value.split(',')
               }
             }
           }
         }
       }
-      return obj;
+      return obj
     },
-    rowSelect(e) {
+    rowSelect (e) {
       // toggle row selection by click
-      if (this.selected.includes(e))
-        this.selected = this.selected.filter(x => x !== e);
-      else this.selected.push(e);
+      if (this.selected.includes(e)) { this.selected = this.selected.filter(x => x !== e) } else this.selected.push(e)
     },
-    rowSingleSelect(e) {
+    rowSingleSelect (e) {
       if (this.selected.includes(e)) {
-        this.selected = [];
+        this.selected = []
       } else if (this.selected.length) {
-        this.selected = [];
-        this.selected.push(e);
+        this.selected = []
+        this.selected.push(e)
       } else {
-        this.selected.push(e);
+        this.selected.push(e)
       }
     },
-    loadMeta() {
+    loadMeta () {
       // TODO:
       // workaround for meta of logs
       // adds 'log' to meta endpoint
-      let getMeta = "";
-      if (this.inpt.indexOf("logs") !== -1) getMeta = "log";
+      let getMeta = ''
+      if (this.inpt.indexOf('logs') !== -1) getMeta = 'log'
       axios.get(`/meta/${this.vlink}${getMeta}`).then(resp => {
         // assign meta
-        this.meta = resp.data.get;
-        this.misc = resp.data.misc;
+        this.meta = resp.data.get
+        this.misc = resp.data.misc
 
         // assign fields to render dialoge
         // assigns according data type to fields
-        this.postConfig = resp.data.post;
-        const postFields = resp.data.post;
-        const formFields = [];
-        const initItem = {};
+        this.postConfig = resp.data.post
+        const postFields = resp.data.post
+        const formFields = []
+        const initItem = {}
         for (let keyField of Object.keys(postFields)) {
-          let field = postFields[keyField];
-          field.name = keyField;
-          formFields.push(field);
-          if (postFields[keyField]["data_type"] === "BooleanField") {
-            initItem[keyField] = false;
-          } else if (!("data_type" in postFields[keyField])) {
-            initItem[keyField] = [];
+          let field = postFields[keyField]
+          field.name = keyField
+          formFields.push(field)
+          if (postFields[keyField]['data_type'] === 'BooleanField') {
+            initItem[keyField] = false
+          } else if (!('data_type' in postFields[keyField])) {
+            initItem[keyField] = []
           } else if (
-            postFields[keyField]["data_type"] === "CharField" &&
-            postFields[keyField]["lookup"] !== null
+            postFields[keyField]['data_type'] === 'CharField' &&
+            postFields[keyField]['lookup'] !== null
           ) {
-            if (postFields[keyField]["lookup"]["multi"] === true) {
-              initItem[keyField] = [];
+            if (postFields[keyField]['lookup']['multi'] === true) {
+              initItem[keyField] = []
             } else {
-              initItem[keyField] = "";
+              initItem[keyField] = ''
             }
           } else {
-            initItem[keyField] = "";
+            initItem[keyField] = ''
           }
         }
-        this.formFields = formFields;
-        this.editedItem = initItem;
-        this.defaultItem = initItem;
+        this.formFields = formFields
+        this.editedItem = initItem
+        this.defaultItem = initItem
         // load actual data
-        this.loadData();
-      });
+        this.loadData()
+      })
     },
-    loadData(newFilter = false) {
+    loadData (newFilter = false) {
       // variable for ajax call
-      let path = "";
+      let path = ''
       // assign parameters for sorting & pagination
-      const { page, itemsPerPage, sortBy, sortDesc } = this.options;
+      const { page, itemsPerPage, sortBy, sortDesc } = this.options
       // pagination
-      let offset = 0;
+      let offset = 0
       if (page > 1) {
-        offset = (page - 1) * itemsPerPage;
+        offset = (page - 1) * itemsPerPage
       }
       if (newFilter) {
-        offset = 0;
-        this.options.page = 1;
+        offset = 0
+        this.options.page = 1
       }
       // sorting
       // case: sorting active
@@ -692,118 +689,117 @@ export default {
         if (sortDesc[0]) {
           path = `/${
             this.inpt
-          }?limit=${itemsPerPage}&offset=${offset}&order_by=${sortBy[0]}.asc`;
+          }?limit=${itemsPerPage}&offset=${offset}&order_by=${sortBy[0]}.asc`
           // case: desc
         } else {
           path = `/${
             this.inpt
-          }?limit=${itemsPerPage}&offset=${offset}&order_by=${sortBy[0]}.desc`;
+          }?limit=${itemsPerPage}&offset=${offset}&order_by=${sortBy[0]}.desc`
         }
       } else {
-        path = `/${this.inpt}?limit=${itemsPerPage}&offset=${offset}`;
+        path = `/${this.inpt}?limit=${itemsPerPage}&offset=${offset}`
       }
       // filtering
-      if (this.newurl !== "") {
-        path = `${path}&${this.newurl}`;
-      } else if (this.quickFilters !== "") {
-        path = `${path}&${this.quickFilters}`;
+      if (this.newurl !== '') {
+        path = `${path}&${this.newurl}`
+      } else if (this.quickFilters !== '') {
+        path = `${path}&${this.quickFilters}`
       }
       // ajax call
       axios
         .get(path)
         .then(resp => {
           // bind items and add index for select
-          this.recordCount = resp.data.count;
-          this.items = resp.data.results;
+          this.recordCount = resp.data.count
+          this.items = resp.data.results
           // test if resp is empty
-          const _headers = [];
+          const _headers = []
           if (resp.data.results[0]) {
             for (let key of Object.keys(resp.data.results[0])) {
               if (this.meta.hasOwnProperty(key)) {
-                if (this.meta[key]["render"]) {
+                if (this.meta[key]['render']) {
                   _headers.push({
                     value: key,
-                    text: this.meta[key]["verbose_name"],
-                    quickFilter: "",
+                    text: this.meta[key]['verbose_name'],
+                    quickFilter: '',
                     active: false
-                  });
+                  })
                 }
               }
             }
           }
           if (this.headers.length === 0 && _headers) {
-            let Filters = [];
+            let Filters = []
             for (let header of _headers) {
               Filters.push(
-                Object.assign({ quickFilter: "", active: false }, header)
-              );
+                Object.assign({ quickFilter: '', active: false }, header)
+              )
             }
-            this.headers = Filters;
+            this.headers = Filters
           }
           this.binaryArrayHeaders = Array.from(
             Array(this.headers.length).keys()
-          );
+          )
           // set laoding state
-          this.loaded = true;
+          this.loaded = true
         })
         .catch(err => {
-          this.activate({ color: "error", error: err.response.data });
-        });
+          this.activate({ color: 'error', error: err.response.data })
+        })
     },
-    inlineEditItem(item) {
-      this.editedIndex = this.items.indexOf(item);
-      this.editedItem = Object.assign({}, item);
-      this.dialog = true;
+    inlineEditItem (item) {
+      this.editedIndex = this.items.indexOf(item)
+      this.editedItem = Object.assign({}, item)
+      this.dialog = true
     },
-    editItem() {
+    editItem () {
       // || this.selected[0].status !== 'draft'
       if (this.selected.length === 0) {
         this.activate({
-          color: "error",
+          color: 'error',
           message: `There is no selected item to edit OR the selection is invalid`
-        });
+        })
       } else {
-        let item = this.convert(this.selected[0], this.postConfig); // this.selected[0] //
-        this.editedIndex = this.items.indexOf(item);
-        this.editedItem = Object.assign({}, item);
-        this.dialog = true;
+        let item = this.convert(this.selected[0], this.postConfig) // this.selected[0] //
+        this.editedIndex = this.items.indexOf(item)
+        this.editedItem = Object.assign({}, item)
+        this.dialog = true
       }
     },
-    viewItem() {
-      this.view = true;
-      this.editItem();
+    viewItem () {
+      this.view = true
+      this.editItem()
     },
-    newItem() {
-      this.editedItem = Object.assign({}, this.defaultItem);
-      this.dialog = true;
+    newItem () {
+      this.editedItem = Object.assign({}, this.defaultItem)
+      this.dialog = true
     },
-    openLog() {
+    openLog () {
       // if no object is selected move to according log overview
-      if (!this.selected.length)
-        this.$router.push({ path: `/api/logs/${this.vlink}` });
+      if (!this.selected.length) { this.$router.push({ path: `/api/logs/${this.vlink}` }) }
       // TODO: else show log entries of selected object
     },
-    changeStatus(target) {
+    changeStatus (target) {
       if (!Object.entries(this.misc).length === 0 && this.misc.constructor === Object) {
         if (
-          this.misc[target].com !== "none" ||
-          this.misc[target].sig !== "logging"
+          this.misc[target].com !== 'none' ||
+          this.misc[target].sig !== 'logging'
         ) {
-          this.sig.sig = this.misc[target].sig;
-          this.sig.com = this.misc[target].com;
-          this.modus = target;
-          this.sigDialog.dialog = true;
+          this.sig.sig = this.misc[target].sig
+          this.sig.com = this.misc[target].com
+          this.modus = target
+          this.sigDialog.dialog = true
         } else {
-          this.modus = target;
-          this.ch();
+          this.modus = target
+          this.ch()
         }
       } else {
-        this.modus = target;
-        this.ch();
+        this.modus = target
+        this.ch()
       }
     },
-    ch(sig = {}) {
-      let item = this.selected[0];
+    ch (sig = {}) {
+      let item = this.selected[0]
       axios
         .patch(
           `${this.inpt}/${item.lifecycle_id}/${item.version}/${this.modus}`,
@@ -812,139 +808,139 @@ export default {
         .then(resp => {
           // snackbar
           this.activate({
-            color: "success",
+            color: 'success',
             message: `Object was successfully set to status ${this.modus}`
-          });
-          this.loadData();
-          this.selected = [];
+          })
+          this.loadData()
+          this.selected = []
         })
         .catch(err => {
           // snackbar
           this.activate({
-            color: "error",
-            message: err.response.data.validation_errors.join("\r\n")
-          });
-        });
-      this.sigDialog.dialog = false;
+            color: 'error',
+            message: err.response.data.validation_errors.join('\r\n')
+          })
+        })
+      this.sigDialog.dialog = false
     },
-    deleteItem() {
+    deleteItem () {
       if (
-        this.misc.delete.com !== "none" ||
-        this.misc.delete.sig !== "logging"
+        this.misc.delete.com !== 'none' ||
+        this.misc.delete.sig !== 'logging'
       ) {
-        this.sig.sig = this.misc.delete.sig;
-        this.sig.com = this.misc.delete.com;
-        this.modus = "delete";
-        this.sigDialog.dialog = true;
+        this.sig.sig = this.misc.delete.sig
+        this.sig.com = this.misc.delete.com
+        this.modus = 'delete'
+        this.sigDialog.dialog = true
       } else {
-        this.del();
+        this.del()
       }
     },
-    del(sig = {}) {
-      let payload = {};
-      if (sig) Object.assign(payload, sig);
-      const item = this.selected[0];
+    del (sig = {}) {
+      let payload = {}
+      if (sig) Object.assign(payload, sig)
+      const item = this.selected[0]
       // TODO: find better solution
-      var u = "";
-      if (!this.config["version"]) {
-        u = `/${this.inpt}/${item.unique}`;
+      var u = ''
+      if (!this.config['version']) {
+        u = `/${this.inpt}/${item.unique}`
       } else {
-        u = `/${this.inpt}/${item.lifecycle_id}/${item.version}`;
+        u = `/${this.inpt}/${item.lifecycle_id}/${item.version}`
       }
       axios({
-        method: "delete",
+        method: 'delete',
         url: u,
         data: payload,
         withCredentials: true
       })
         .then(resp => {
           this.activate({
-            color: "success",
-            message: "Object was successfully deleted"
-          });
-          this.loadData();
+            color: 'success',
+            message: 'Object was successfully deleted'
+          })
+          this.loadData()
         })
         .catch(err => {
           this.activate({
-            color: "success",
-            error: err.response.data.validation_errors.join("\r\n")
-          });
-        });
-      this.sigDialog.dialog = false;
+            color: 'success',
+            error: err.response.data.validation_errors.join('\r\n')
+          })
+        })
+      this.sigDialog.dialog = false
     },
-    load() {
-      this.loading = true;
-      this.loadMeta();
-      this.loading = false;
+    load () {
+      this.loading = true
+      this.loadMeta()
+      this.loading = false
     },
-    close() {
-      this.dialog = false;
+    close () {
+      this.dialog = false
       setTimeout(() => {
-        this.editedItem = Object.assign({}, this.defaultItem);
-        this.editedIndex = -1;
-        this.selected = [];
-      }, 300);
+        this.editedItem = Object.assign({}, this.defaultItem)
+        this.editedIndex = -1
+        this.selected = []
+      }, 300)
     },
-    save() {
+    save () {
       // edit
       if (this.selected.length > 0) {
-        if (this.misc.edit.com === "none" && this.misc.edit.sig === "logging") {
-          this.save2();
+        if (this.misc.edit.com === 'none' && this.misc.edit.sig === 'logging') {
+          this.save2()
         } else {
-          this.sig.sig = this.misc.edit.sig;
-          this.sig.com = this.misc.edit.com;
-          this.modus = "edit";
-          this.sigDialog.dialog = true;
+          this.sig.sig = this.misc.edit.sig
+          this.sig.com = this.misc.edit.com
+          this.modus = 'edit'
+          this.sigDialog.dialog = true
         }
       } else {
-        if (this.misc.add.com === "none" && this.misc.add.sig === "logging") {
-          this.save2();
+        if (this.misc.add.com === 'none' && this.misc.add.sig === 'logging') {
+          this.save2()
         } else {
-          this.sig.sig = this.misc.add.sig;
-          this.sig.com = this.misc.add.com;
-          this.modus = "add";
-          this.sigDialog.dialog = true;
+          this.sig.sig = this.misc.add.sig
+          this.sig.com = this.misc.add.com
+          this.modus = 'add'
+          this.sigDialog.dialog = true
         }
       }
     },
-    save2(sig = {}) {
-      let item = this.selected[0];
-      let payload = this.editedItem;
+    save2 (sig = {}) {
+      let item = this.selected[0]
+      let payload = this.editedItem
       // if payload of signature != empty, assign sig to payload of api call
-      if (sig) Object.assign(payload, sig);
+      if (sig) Object.assign(payload, sig)
       if (this.editedIndex > -1) {
         // TODO: find better solution
-        var u = "";
-        if (!this.config["version"]) {
-          u = `/${this.inpt}/${item.unique}`;
+        var u = ''
+        if (!this.config['version']) {
+          u = `/${this.inpt}/${item.unique}`
         } else {
-          u = `/${this.inpt}/${item.lifecycle_id}/${item.version}`;
+          u = `/${this.inpt}/${item.lifecycle_id}/${item.version}`
         }
         // edit item
         axios({
-          method: "patch",
+          method: 'patch',
           url: u,
           data: payload,
           withCredentials: true
         })
           .then(resp => {
-            this.close();
-            this.loadData();
+            this.close()
+            this.loadData()
           })
           .catch(err => {
-            if ("validation_errors" in err.response.data)
+            if ('validation_errors' in err.response.data) {
               this.activate({
-                color: "error",
-                message: err.response.data.validation_errors.join("\r\n")
-              });
-            else {
+                color: 'error',
+                message: err.response.data.validation_errors.join('\r\n')
+              })
+            } else {
               this.activate({
-                color: "error",
-                message: "Missing and / or wrong data"
-              });
-              this.errorMsgs = err.response.data;
+                color: 'error',
+                message: 'Missing and / or wrong data'
+              })
+              this.errorMsgs = err.response.data
             }
-          });
+          })
       } else {
         // new item
         // strip empty fields from payload
@@ -952,102 +948,101 @@ export default {
           if (
             payload[propName] === null ||
             payload[propName] === undefined ||
-            payload[propName] === ""
+            payload[propName] === ''
           ) {
-            delete payload[propName];
+            delete payload[propName]
           }
         }
         axios({
-          method: "post",
+          method: 'post',
           url: `/${this.inpt}`,
           data: payload,
           withCredentials: true
         })
           .then(resp => {
-            this.close();
-            this.loadData();
+            this.close()
+            this.loadData()
           })
           .catch(err => {
-            if ("validation_errors" in err.response.data)
+            if ('validation_errors' in err.response.data) {
               this.activate({
-                color: "error",
-                message: err.response.data.validation_errors.join("\r\n")
-              });
-            else {
+                color: 'error',
+                message: err.response.data.validation_errors.join('\r\n')
+              })
+            } else {
               this.activate({
-                color: "error",
-                message: "Missing and / or wrong data"
-              });
-              this.errorMsgs = err.response.data;
+                color: 'error',
+                message: 'Missing and / or wrong data'
+              })
+              this.errorMsgs = err.response.data
             }
-          });
+          })
       }
-      this.sigDialog.dialog = false;
+      this.sigDialog.dialog = false
     },
-    save3(sig) {
+    save3 (sig) {
       switch (this.modus) {
-        case "delete":
-          this.del(sig);
-          break;
-        case "add":
-          this.save2(sig);
-          break;
-        case "edit":
-          this.save2(sig);
-          break;
+        case 'delete':
+          this.del(sig)
+          break
+        case 'add':
+          this.save2(sig)
+          break
+        case 'edit':
+          this.save2(sig)
+          break
         default:
-          this.ch(sig);
-          break;
+          this.ch(sig)
+          break
       }
     },
-    getColor(status) {
-      if (status === "productive") {
-        return "#36B37E";
-      } else if (status === "blocked" || status === "archived") {
-        return "#FF5630";
+    getColor (status) {
+      if (status === 'productive') {
+        return '#36B37E'
+      } else if (status === 'blocked' || status === 'archived') {
+        return '#FF5630'
       } else {
-        return "#FFAB00";
+        return '#FFAB00'
       }
     },
-    newVersion() {
-      let item = this.selected[0];
+    newVersion () {
+      let item = this.selected[0]
       axios({
-        method: "post",
+        method: 'post',
         url: `/${this.inpt}/${item.lifecycle_id}/${item.version}`,
         withCredentials: true
       })
         .then(resp => {
-          this.loadData();
+          this.loadData()
         })
         .catch(err => {
-          this.activate({ color: "error", message: err.response.data });
-        });
+          this.activate({ color: 'error', message: err.response.data })
+        })
     },
-    allowed(transition) {
+    allowed (transition) {
       if (this.selected.length !== 1) {
-        return true;
+        return true
       } else {
-        const currentStatus = this.selected[0]["status"];
-        if (this.allowedTransistions[currentStatus].indexOf(transition) > -1)
-          return false;
-        return true;
+        const currentStatus = this.selected[0]['status']
+        if (this.allowedTransistions[currentStatus].indexOf(transition) > -1) { return false }
+        return true
       }
     },
-    addQuickFilter() {
+    addQuickFilter () {
       //
     },
-    deleteQuickFilter() {
+    deleteQuickFilter () {
       //
     }
   },
 
-  mounted() {
-    this.inpt = this.config["url"]["rel"];
-    this.load();
+  mounted () {
+    this.inpt = this.config['url']['rel']
+    this.load()
     // focus main div
-    this.$refs.main.focus();
+    this.$refs.main.focus()
   }
-};
+}
 </script>
 
 <style>

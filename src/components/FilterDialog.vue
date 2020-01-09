@@ -35,10 +35,12 @@
                     justify="center"
                   >
                     <v-col cols="4">
-                      <v-combobox
+                      <v-autocomplete
                         v-if="i === 0"
                         v-model="filter.field"
                         :items="usableFields"
+                        item-value="value"
+                        item-text="text"
                       />
                     </v-col>
                     <v-col cols="4">
@@ -181,7 +183,7 @@ export default {
           {
             id: '',
             sequence: 1,
-            field: '',
+            field: { value: '', text: '' },
             chain: 'and',
             children: [
               {
@@ -197,7 +199,7 @@ export default {
       defaultFilter: {
         id: '',
         sequence: 1,
-        field: '',
+        field: { value: '', text: '' },
         children: [
           {
             id: '',
@@ -220,7 +222,7 @@ export default {
       // returns true if if all condition fields are filled
       for (let filter of this.filters.filter) {
         for (let child of filter.children) {
-          if (child.value == '') return false
+          if (child.value === '') return false
         }
       }
       return true
@@ -250,7 +252,7 @@ export default {
       // emit query string and depending on argument close dialog or not
       let url = ''
       for (const [i, filter] of this.filters.filter.entries()) {
-        let field = filter.field
+        let field = filter.field.value
         let condition = filter.chain
         url += field + '='
         for (const [index, child] of filter.children.entries()) {
@@ -265,7 +267,7 @@ export default {
       this.defineActiveState()
       if (close) { this.close() }
     },
-    reset() {
+    reset () {
       this.filters.filter = [Object.assign({}, this.defaultFilter)]
       this.$emit('filterurl', ' ')
       this.$emit('active-flag', false)
@@ -293,7 +295,7 @@ export default {
     },
     removeChild (index, i) {
       // spare last filter
-      if (this.filters.filter.length == 1 && this.filters.filter[0].children.length == 1) {
+      if (this.filters.filter.length === 1 && this.filters.filter[0].children.length === 1) {
         return
       }
       // remove child condiction of filter
@@ -302,19 +304,18 @@ export default {
       if (this.filters.filter[index].children.length === 0) {
         this.filters.filter.splice(index, 1)
       }
-      
     },
     defineActiveState () {
-        if (this.filters.filter.length == 1) {
-          if (this.filters.filter[0].children[0].value !== '') {
-            this.$emit('active-flag', true)
-          } else {
-            this.$emit('active-flag', false)
-          }
-        } else {
+      if (this.filters.filter.length === 1) {
+        if (this.filters.filter[0].children[0].value !== '') {
           this.$emit('active-flag', true)
+        } else {
+          this.$emit('active-flag', false)
         }
+      } else {
+        this.$emit('active-flag', true)
       }
+    }
   }
 }
 </script>

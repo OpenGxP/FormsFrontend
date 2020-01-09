@@ -4,6 +4,7 @@ import auth from './store/modules/auth'
 import initialize from './store/modules/initialize'
 import configuration from './store/modules/configuration'
 import user from './store/modules/user'
+import inbox from './store/modules/inbox'
 import permission from './store/modules/permission'
 import role from './store/modules/role'
 import logs from './store/modules/logs'
@@ -38,6 +39,7 @@ export default new Vuex.Store({
     permission,
     role,
     session,
+    inbox,
     global
   }
 })

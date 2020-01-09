@@ -63,68 +63,72 @@
 </template>
 
 <script>
-import axios from "axios";
-import { mapActions } from "vuex";
+import axios from 'axios'
+import { mapActions } from 'vuex'
 
 export default {
-  name: "NewPassword",
+  name: 'NewPassword',
 
   props: {
     dialogName: {
       type: String,
-      default: "New Password"
+      default: 'New Password'
     }
   },
 
-  data() {
+  data () {
     return {
       err: false,
       errMsgs: [],
-      color: "primary",
-      password: "",
-      password_new: "",
-      password_new_verification: "",
+      color: 'primary',
+      password: '',
+      password_new: '',
+      password_new_verification: '',
       show1: false,
       show2: false,
       rules: {
-        required: value => !!value || "Required.",
-        min: v => v.length >= 8 || "Min 8 characters",
+        required: value => !!value || 'Required.',
+        min: v => v.length >= 8 || 'Min 8 characters',
         match: () =>
           this.password_new === this.password_new_verification ||
-          "Passwords must match"
+          'Passwords must match'
       }
-    };
+    }
   },
 
   methods: {
     ...mapActions({
       // snackbar
-      activate: "global/snackbar/activate"
+      activate: 'global/snackbar/activate'
     }),
-    save() {
-      const password = this.password;
-      const password_new = this.password_new;
-      const password_new_verification = this.password_new_verification;
+    save () {
+      const password = this.password
+      const passwordNew = this.password_new
+      const passwordNewVerification = this.password_new_verification
       axios({
-        method: "patch",
-        url: "/user/change_password",
-        data: { password, password_new, password_new_verification },
+        method: 'patch',
+        url: '/user/change_password',
+        data: {
+          'password': password,
+          'password_new': passwordNew,
+          'password_new_verification': passwordNewVerification
+        },
         withCredentials: true
       })
         .then(resp => {
           if (resp.status === 200) {
-            this.$store.dispatch("initialize");
-            this.$store.dispatch("get");
-            this.$store.commit("login");
-            this.$router.push("/");
+            this.$store.dispatch('initialize')
+            this.$store.dispatch('get')
+            this.$store.commit('login')
+            this.$router.push('/')
           }
         })
         .catch(err => {
           this.err = true
           this.errMsgs = err.response.data
-          this.activate({ color: "error", message: err.response.data[0] });
-        });
+          this.activate({ color: 'error', message: err.response.data[0] })
+        })
     }
   }
-};
+}
 </script>

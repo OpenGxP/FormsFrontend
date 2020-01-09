@@ -5,8 +5,10 @@ import router from './router'
 import store from './store'
 import ability from './ability'
 import axios from 'axios'
+import vuelidate from 'vuelidate'
 import VueHotkey from 'v-hotkey'
 import { heartbeat } from './helpers/heartbeat'
+import { newsfeed } from './helpers/newsfeed'
 
 import vuetify from './plugins/vuetify'
 
@@ -14,6 +16,9 @@ Vue.config.productionTip = false
 
 // configure casl
 Vue.use(abilitiesPlugin, ability)
+
+// vuelidate
+Vue.use(vuelidate)
 
 // hotkeys
 Vue.use(VueHotkey)
@@ -36,8 +41,9 @@ axios.interceptors.response.use(resp => {
   }
 })
 
-// heartbeat
+// constant polling
 heartbeat()
+newsfeed()
 
 new Vue({
   vuetify,

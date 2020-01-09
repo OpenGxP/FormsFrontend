@@ -42,8 +42,8 @@ export default {
   props: {
     fields: {
       type: Array,
-      default: function() {
-        return ["one", "two", "three", "four", "Lastname"];
+      default: function () {
+        return ['one', 'two', 'three', 'four', 'Lastname']
       }
     },
     dialog: {
@@ -52,13 +52,13 @@ export default {
     }
   },
 
-  data() {
+  data () {
     return {
       tab: null,
-      operators: ["contains", "exact", "startswith", "endswith"]
-    };
+      operators: ['contains', 'exact', 'startswith', 'endswith']
+    }
   }
-};
+}
 </script>
 
 <style scoped>
