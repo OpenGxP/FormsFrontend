@@ -153,7 +153,6 @@ export default {
   watch: {
     permissions: {
       handler (val) {
-        console.log('permissions', val)
         this.types = val.reduce((acc, cur) => {
           const type = cur.model
 
