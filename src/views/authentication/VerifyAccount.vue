@@ -235,10 +235,6 @@ export default {
         this.question_two = resp.data.question_two
         this.question_three = resp.data.question_three
       })
-      .catch(err => {
-        // TO DO
-        console.log(err)
-      })
   },
 
   methods: {
@@ -252,10 +248,6 @@ export default {
       })
         .then(resp => {
           this.$router.push('/login')
-        })
-        .catch(err => {
-          // TO DO
-          console.log(err)
         })
     }
   }
