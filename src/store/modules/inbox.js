@@ -12,9 +12,9 @@ const getters = {
 const actions = {
   updateInbox: ({ commit }) => {
     axios
-      .get('/user/inbox')
+      .get('/user/inbox/notifications')
       .then(resp => {
-        commit('updateInbox', resp.data.count)
+        commit('updateInbox', resp.data.notifications)
       })
   }
 }

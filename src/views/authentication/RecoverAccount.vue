@@ -13,6 +13,7 @@
         md8
         lg4
       >
+
         <v-card class="elevation-12">
           <v-card-title
             primary-title
@@ -62,9 +63,7 @@
             </v-btn>
           </v-card-actions>
 
-          <p
-            class="text-center py-6"
-          >
+          <p class="text-center py-6">
             <router-link
               style="text-decoration: none;"
               to="/login"
@@ -73,6 +72,7 @@
             </router-link>
           </p>
         </v-card>
+
       </v-flex>
     </v-layout>
   </v-container>
@@ -80,6 +80,7 @@
 
 <script>
 import axios from 'axios'
+
 export default {
   name: 'Login',
   data: () => ({

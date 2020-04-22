@@ -35,6 +35,15 @@ export default {
     }
   },
 
+  created () {
+    window.addEventListener('beforeunload', event => {
+      // TODO: check authentication state
+      event.preventDefault()
+      // Chrome requires returnValue to be set.
+      event.returnValue = ''
+    })
+  },
+
   mounted () {
     // for scoping
     /*

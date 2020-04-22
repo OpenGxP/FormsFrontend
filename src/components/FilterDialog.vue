@@ -35,12 +35,13 @@
                     justify="center"
                   >
                     <v-col cols="4">
-                      <v-autocomplete
+                      <v-select
                         v-if="i === 0"
                         v-model="filter.field"
                         :items="usableFields"
-                        item-value="value"
                         item-text="text"
+                        item-value="value"
+                        return-object
                       />
                     </v-col>
                     <v-col cols="4">
@@ -160,13 +161,15 @@
 </template>
 
 <script>
+import _ from 'lodash'
+
 export default {
 
   props: {
     fields: {
       type: Array,
       default: function () {
-        return ['one', 'two', 'three', 'four', 'five']
+        return []
       }
     },
     dialog: {
@@ -216,7 +219,7 @@ export default {
   computed: {
     usableFields () {
       const usedFields = this.filters.filter.map(x => x.field)
-      return this.fields.filter(x => !(usedFields.includes(x)))
+      return Array.from(this.fields.filter(x => !(usedFields.includes(x))))
     },
     allConditionsFilled () {
       // returns true if if all condition fields are filled
@@ -226,6 +229,9 @@ export default {
         }
       }
       return true
+    },
+    quickFilters () {
+      return this.fields.filter(field => field.quickFilter !== '').map(field => field.quickFilter)
     }
   },
 
@@ -233,9 +239,31 @@ export default {
     // watch state and apply val for empty filter
     dialog: {
       handler (val) {
-        if (val && this.filters.filter[0].field === '') {
-          this.filters.filter[0].field = this.fields[0]
-          this.filters.filter[0].children[0].operator = this.operators[0]
+        // check if filters are empty
+        if (val && this.filters.filter[0].field.value === '') {
+          if (this.quickFilters.length) {
+            // active quickfilters
+            for (let field of this.fields) {
+              if (field.quickFilter !== '') {
+                if (this.filters.filter[0].field.value === '') {
+                  // first
+                  this.filters.filter[0].field = field
+                  this.filters.filter[0].children[0].operator = Array.from(this.operators)[0]
+                  this.filters.filter[0].children[0].value = field.quickFilter
+                } else {
+                  let tmp = _.cloneDeep(this.defaultFilter)
+                  tmp.field = field
+                  tmp.children[0].operator = Array.from(this.operators)[0]
+                  tmp.children[0].value = field.quickFilter
+                  this.filters.filter.push(tmp)
+                }
+              }
+            }
+          } else {
+            // no active quickfilters
+            this.filters.filter[0].field = Array.from(this.fields)[0]
+            this.filters.filter[0].children[0].operator = Array.from(this.operators)[0]
+          }
         }
       },
       deep: true,
@@ -277,12 +305,12 @@ export default {
       const tmp = {
         id: '',
         sequence: 1,
-        field: this.usableFields[0],
+        field: Object.assign({}, this.usableFields[0]),
         children: [
           {
             id: '',
             sequence: 1,
-            operator: this.operators[0],
+            operator: Object.assign({}, this.operators[0]),
             value: ''
           }
         ]

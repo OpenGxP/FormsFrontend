@@ -1,10 +1,17 @@
 <template>
   <div>
     <!-- main drawer -->
-    <app-navigation-drawer v-model="drawer" :user="user" />
+    <app-navigation-drawer
+      v-model="drawer"
+      :user="user"
+    />
 
     <!-- temp mobile drawer -->
-    <v-navigation-drawer v-model="drawer2" absolute right>
+    <v-navigation-drawer
+      v-model="drawer2"
+      absolute
+      right
+    >
       <v-list dense>
         <v-list-item to="/profile">
           <v-list-item-action>
@@ -18,17 +25,31 @@
 
       <template v-slot:append>
         <div class="pa-2">
-          <v-btn block @click="logout()">Logout</v-btn>
+          <v-btn
+            block
+            @click="logout()"
+          >Logout</v-btn>
         </div>
       </template>
     </v-navigation-drawer>
 
     <!-- Toolbar -->
-    <v-app-bar app color="primary" fixed :collapse="!collapse">
+    <v-app-bar
+      app
+      color="primary"
+      fixed
+      :collapse="!collapse"
+    >
       <v-app-bar-nav-icon @click.stop="drawer = !drawer" />
-      <v-toolbar-title class="ml-0 pl-4" style="width: 300px">
+      <v-toolbar-title
+        class="ml-0 pl-4"
+        style="width: 300px"
+      >
         <span class="hidden-sm-and-down">
-          <router-link to="/" style="text-decoration: none; color: white;">OpenGxP</router-link>
+          <router-link
+            to="/"
+            style="text-decoration: none; color: white;"
+          ><span class="font-weight-light">Open</span><span>GxP</span></router-link>
         </span>
       </v-toolbar-title>
 
@@ -36,10 +57,22 @@
 
       <v-spacer />
 
-      <v-tooltip v-if="collapse" bottom>
+      <v-tooltip
+        v-if="collapse"
+        bottom
+      >
         <template v-slot:activator="{ on }">
-          <v-btn class="hidden-sm-and-down" icon v-on="on" @click="toInbox()">
-            <v-badge v-if="numInbox" overlap color="warning">
+          <v-btn
+            class="hidden-sm-and-down"
+            icon
+            v-on="on"
+            @click="toInbox()"
+          >
+            <v-badge
+              v-if="numInbox"
+              overlap
+              color="warning"
+            >
               <template v-slot:badge>{{ numInbox }}</template>
               <v-icon>mail</v-icon>
             </v-badge>
@@ -49,25 +82,47 @@
         <span>Inbox</span>
       </v-tooltip>
 
-      <v-tooltip v-if="user && collapse" bottom>
+      <v-tooltip
+        v-if="user && collapse"
+        bottom
+      >
         <template v-slot:activator="{ on }">
-          <v-btn class="hidden-sm-and-down" icon v-on="on" @click="toProfile()">
+          <v-btn
+            class="hidden-sm-and-down"
+            icon
+            v-on="on"
+            @click="toProfile()"
+          >
             <v-icon>person</v-icon>
           </v-btn>
         </template>
         <span>Profile</span>
       </v-tooltip>
 
-      <v-tooltip v-if="collapse" bottom>
+      <v-tooltip
+        v-if="collapse"
+        bottom
+      >
         <template v-slot:activator="{ on }">
-          <v-menu offset-y v-on="on">
+          <v-menu
+            offset-y
+            v-on="on"
+          >
             <template v-slot:activator="{ on }">
-              <v-btn class="hidden-sm-and-down" icon v-on="on">
+              <v-btn
+                class="hidden-sm-and-down"
+                icon
+                v-on="on"
+              >
                 <v-icon>settings</v-icon>
               </v-btn>
             </template>
             <v-list>
-              <v-list-item v-for="(item, index) in items" :key="index" @click="navigate(item.url)">
+              <v-list-item
+                v-for="(item, index) in items"
+                :key="index"
+                @click="navigate(item.url)"
+              >
                 <v-list-item-icon>
                   <v-icon v-text="item.icon" />
                 </v-list-item-icon>
@@ -89,16 +144,28 @@
         <span>Settings</span>
       </v-tooltip>
 
-      <v-tooltip v-if="collapse" bottom>
+      <v-tooltip
+        v-if="collapse"
+        bottom
+      >
         <template v-slot:activator="{ on }">
-          <v-btn class="hidden-sm-and-down" icon v-on="on" @click="logout()">
+          <v-btn
+            class="hidden-sm-and-down"
+            icon
+            v-on="on"
+            @click="logout()"
+          >
             <v-icon>input</v-icon>
           </v-btn>
         </template>
         <span>Logout</span>
       </v-tooltip>
 
-      <v-btn class="hidden-md-and-up" icon @click.stop="drawer2 = !drawer2">
+      <v-btn
+        class="hidden-md-and-up"
+        icon
+        @click.stop="drawer2 = !drawer2"
+      >
         <v-icon>more_vert</v-icon>
       </v-btn>
     </v-app-bar>
@@ -156,7 +223,7 @@ export default {
       this.activate()
     },
     logout () {
-      this.$store.dispatch('logout')
+      this.$store.dispatch('authentication/logout')
     },
     toProfile () {
       this.$router.push({ path: '/profile' })
@@ -170,7 +237,7 @@ export default {
   },
 
   created () {
-    this.uuser = this.$store.getters.currentUser
+    this.uuser = this.$store.getters['user2/username']
     this.text = this.uuser
   }
 }

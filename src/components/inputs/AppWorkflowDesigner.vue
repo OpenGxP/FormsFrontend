@@ -25,7 +25,7 @@
                     <v-text-field
                       v-model="step.step"
                       :label="meta.step.verbose_name"
-                      :disabled="!meta.step.editable || !editable"
+                      :disabled="!meta.step.editable || !editable || isReferenced(step.step)"
                       :hint="meta.step.help_text"
                       @blur="$v.step.$touch()"
                     />
@@ -133,7 +133,22 @@
 import { required } from 'vuelidate/lib/validators'
 
 export default {
-  props: ['data', 'meta', 'editable'],
+  props: {
+    data: {
+      type: Array,
+      default: function () {
+        return []
+      }
+    },
+    meta: {
+      type: Object
+    },
+    editable: {
+      type: Boolean,
+      default: false
+    }
+  },
+  // ['data', 'meta', 'editable'],
 
   data () {
     return {
@@ -192,16 +207,17 @@ export default {
 
   watch: {
     data: {
-      immediate: true,
-      handler (newVal) {
-        // check if value of prop data, if emtpy assign default value (empty step)
-        if (newVal.length === 0) this.steps = this.defaultSteps.slice()
-        else if (this.steps !== newVal) {
+      handler (val) {
+        // check value of prop data, if emtpy assign clone of default step (empty step)
+        if (val.length === 0) this.steps = this.defaultSteps.slice()
+        else if (this.steps !== val) {
           // if there is more than one step, sort arry by sequence
-          if (newVal.length > 1) this.steps = newVal.sort((a, b) => (a.sequence > b.sequence) ? 1 : ((b.sequence > a.sequence) ? -1 : 0))
-          else this.steps = newVal
+          if (val.length > 1) this.steps = val.sort((a, b) => (a.sequence > b.sequence) ? 1 : ((b.sequence > a.sequence) ? -1 : 0))
+          else this.steps = val
         }
-      }
+      },
+      immediate: true,
+      depp: true
     }
   },
 
@@ -213,7 +229,7 @@ export default {
         this.steps.push({
           step: '',
           role: '',
-          predecessors: '',
+          predecessors: [],
           text: '',
           sequence: Math.max.apply(Math, this.steps.map(x => x.sequence)) + 1
           // electronicSignature: false
@@ -231,6 +247,22 @@ export default {
         }
       }
       this.steps.splice(index, 1)
+    },
+    isReferenced (val) {
+      // checks if step is referenceed
+      // returns boolean
+      for (let step of this.steps) {
+        if (step.predecessors.includes(val)) return true
+      }
+      return false
+    },
+    isUnique (val) {
+      // checks if step is referenceed
+      // returns boolean
+      for (let step of this.steps) {
+        if (step.step === val) return true
+      }
+      return false
     },
     pre (self) {
       //

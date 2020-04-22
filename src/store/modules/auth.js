@@ -3,6 +3,7 @@ import router from '@/router'
 import ability from '@/ability'
 import { USER_REQUEST } from '../actions/user'
 // import { GET_INBOX } from '../actions/session'
+import authentication from '@/services/api/authentication'
 
 const state = {
   auth: false,
@@ -16,6 +17,9 @@ const getters = {
 }
 
 const actions = {
+  login2 ({ commit, dispatch }, username, password) {
+    return authentication.login(username, password)
+  },
   login: ({ commit, dispatch }, user) => {
     return new Promise((resolve, reject) => {
       axios({
@@ -25,8 +29,13 @@ const actions = {
         withCredentials: true
       })
         .then(resp => {
+          // get auth token
           dispatch('getToken')
-          // dispatch('initialize')
+          // dispatch
+          dispatch('setInitialAttributeState', {
+            'initialPassword': resp.data.initial_password,
+            'initialTimezone': resp.data.initial_timezone
+          })
           dispatch(USER_REQUEST, {
             'user': user,
             'permissions': resp.data
@@ -70,6 +79,14 @@ const actions = {
         }
         commit('setToken', token)
       })
+  },
+  _initialize: ({ dispatch, commit }) => {
+    dispatch('initialize')
+    dispatch('get')
+    dispatch('initUser')
+    dispatch('session/getInbox')
+    commit('login')
+    router.push('/')
   }
   /*
   setNewPassword: ({ commit }, credentials) => {

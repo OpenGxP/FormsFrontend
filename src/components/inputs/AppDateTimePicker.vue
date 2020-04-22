@@ -65,10 +65,12 @@
             v-model="timeIn"
             :label="`${label} time`"
             append-icon="access_time"
+            append-outer-icon="clear"
             readonly
             :disabled="!editable"
             v-on="on"
             @click:append="modal2 = true"
+            @click:append-outer="clear()"
           />
         </template>
         <v-time-picker
@@ -106,8 +108,8 @@ export default {
 
   data () {
     return {
-      dateIn: this.dateTimeProp ? this.dateTimeProp.substring(0, 10) : '',
-      timeIn: this.dateTimeProp ? this.dateTimeProp.substring(11, 19) : '',
+      dateIn: '',
+      timeIn: '',
       modal: false,
       modal2: false,
       select: true
@@ -130,7 +132,6 @@ export default {
 
   watch: {
     dateTimeProp: {
-      immediate: true,
       handler (newVal) {
         if (newVal) {
           this.dateIn = newVal.substring(0, 10)
@@ -139,7 +140,9 @@ export default {
           this.dateIn = ''
           this.timeIn = ''
         }
-      }
+      },
+      deep: true,
+      immediate: true
     }
   },
 
@@ -153,6 +156,11 @@ export default {
     },
     saveDate (date) {
       this.$refs.dialogDate.save(date)
+      this.$emit('change-val', this.datetime)
+    },
+    clear () {
+      this.timeIn = ''
+      this.dateIn = ''
       this.$emit('change-val', this.datetime)
     }
   }

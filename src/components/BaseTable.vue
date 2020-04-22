@@ -1,41 +1,79 @@
 <template>
   <!-- tabindex to make div focusable -->
-  <div ref="main" tabindex="0">
+  <div
+    ref="main"
+    tabindex="0"
+  >
     <!-- @keyup.67="newItem()" @keyup.69="editItem()" @keyup.86="viewItem()" -->
     <!-- toolbar -->
-    <v-toolbar dark color="primary" fixed>
+    <v-toolbar
+      dark
+      color="primary"
+      fixed
+    >
       <!-- Data table interaction -->
       <v-tooltip bottom>
         <template v-slot:activator="{ on }">
-          <v-btn icon v-on="on" @click="load()">
+          <v-btn
+            icon
+            v-on="on"
+            @click="load()"
+          >
             <v-icon>update</v-icon>
           </v-btn>
         </template>
         <span>Reload</span>
       </v-tooltip>
-      <v-divider class="mx-2" inset vertical />
+      <v-divider
+        class="mx-2"
+        inset
+        vertical
+      />
       <!-- view -->
-      <v-tooltip v-if="config['post'] && ($can('all', 'global') || $can('view', vlink))" bottom>
+      <v-tooltip
+        v-if="config['post'] && ($can('all', 'global') || $can('view', vlink))"
+        bottom
+      >
         <template v-slot:activator="{ on }">
-          <v-btn icon :disabled="activeSelection" v-on="on" @click="viewItem()">
+          <v-btn
+            icon
+            :disabled="activeSelection"
+            v-on="on"
+            @click="viewItem()"
+          >
             <v-icon>visibility</v-icon>
           </v-btn>
         </template>
         <span>View</span>
       </v-tooltip>
       <!-- add -->
-      <v-tooltip v-if="config['post'] && ($can('all', 'global') || $can('add', vlink))" bottom>
+      <v-tooltip
+        v-if="config['post'] && ($can('all', 'global') || $can('add', vlink))"
+        bottom
+      >
         <template v-slot:activator="{ on }">
-          <v-btn icon v-on="on" @click="newItem()">
+          <v-btn
+            icon
+            v-on="on"
+            @click="newItem()"
+          >
             <v-icon>add</v-icon>
           </v-btn>
         </template>
         <span>Add</span>
       </v-tooltip>
       <!-- edit -->
-      <v-tooltip v-if="config['patch'] && ($can('all', 'global') || $can('edit', vlink))" bottom>
+      <v-tooltip
+        v-if="config['patch'] && ($can('all', 'global') || $can('edit', vlink))"
+        bottom
+      >
         <template v-slot:activator="{ on }">
-          <v-btn icon :disabled="activeSelection || allowedSelection" v-on="on" @click="editItem()">
+          <v-btn
+            icon
+            :disabled="activeSelection || allowedSelection"
+            v-on="on"
+            @click="editItem()"
+          >
             <v-icon>edit</v-icon>
           </v-btn>
         </template>
@@ -59,7 +97,10 @@
         <span>New Version</span>
       </v-tooltip>
       <!-- delete -->
-      <v-tooltip v-if="config['delete'] && ($can('all', 'global') || $can('delete', vlink))" bottom>
+      <v-tooltip
+        v-if="config['delete'] && ($can('all', 'global') || $can('delete', vlink))"
+        bottom
+      >
         <template v-slot:activator="{ on }">
           <v-btn
             icon
@@ -73,9 +114,16 @@
         <span>Delete</span>
       </v-tooltip>
       <!-- log -->
-      <v-tooltip v-if="($can('all', 'global') || $can('read', `${vlink}log`))" bottom>
+      <v-tooltip
+        v-if="($can('all', 'global') || $can('read', `${vlink}log`))"
+        bottom
+      >
         <template v-slot:activator="{ on }">
-          <v-btn icon v-on="on" @click="openLog()">
+          <v-btn
+            icon
+            v-on="on"
+            @click="openLog()"
+          >
             <v-icon>event_note</v-icon>
           </v-btn>
         </template>
@@ -125,10 +173,18 @@
       </template>
       <!-- inbox-->
       <template v-if="vlink === 'inbox'">
-        <v-btn text :disabled="activeSelection" @click="changeStatus('approve')">
+        <v-btn
+          text
+          :disabled="activeSelection"
+          @click="changeStatus('approve')"
+        >
           <v-icon left>done</v-icon>approve
         </v-btn>
-        <v-btn text :disabled="activeSelection" @click="changeStatus('reject')">
+        <v-btn
+          text
+          :disabled="activeSelection"
+          @click="changeStatus('reject')"
+        >
           <v-icon left>clear</v-icon>reject
         </v-btn>
       </template>
@@ -143,16 +199,33 @@
     />
 
     <!-- columns -->
-    <v-dialog v-model="columnSelect" max-width="400">
+    <v-dialog
+      v-model="columnSelect"
+      max-width="400"
+    >
       <v-card class="mx-auto">
         <v-card-title class="headline">Visible Columns</v-card-title>
-        <v-list subheader two-line flat>
-          <v-list-item-group v-model="binaryArrayHeaders" multiple>
+        <v-list
+          subheader
+          two-line
+          flat
+        >
+          <v-list-item-group
+            v-model="binaryArrayHeaders"
+            multiple
+          >
             <!-- 1 -->
-            <v-list-item v-for="(header, index) in headers" :key="index">
+            <v-list-item
+              v-for="(header, index) in headers"
+              :key="index"
+            >
               <template v-slot:default="{ active, toggle }">
                 <v-list-item-action>
-                  <v-checkbox v-model="active" color="primary" @click="toggle" />
+                  <v-checkbox
+                    v-model="active"
+                    color="primary"
+                    @click="toggle"
+                  />
                 </v-list-item-action>
 
                 <v-list-item-content>
@@ -187,10 +260,22 @@
               :input-value="dense"
               @change="tableSettings({ dense: !dense })"
             />
-            <v-btn class="mx-2" tile text @click="filterDialog = true">
-              <v-icon left :color="activeFilter ? 'primary' : 'default'">tune</v-icon> Filter
+            <v-btn
+              class="mx-2"
+              tile
+              text
+              @click="filterDialog = true"
+            >
+              <v-icon
+                left
+                :color="activeFilter ? 'primary' : 'default'"
+              >tune</v-icon> Filter
             </v-btn>
-            <v-btn tile text  @click="columnSelect = true">
+            <v-btn
+              tile
+              text
+              @click="columnSelect = true"
+            >
               <v-icon left>expand_more</v-icon> Columns
             </v-btn>
           </template>
@@ -200,6 +285,7 @@
         <v-data-table
           v-model="selected"
           :headers="selectedHeaders"
+          fixed-header
           :items="items"
           :search="search"
           :dense="dense"
@@ -217,10 +303,16 @@
           @click:row="rowSingleSelect"
           @dblclick:row="editItem()"
         >
-          <template v-slot:header="{ props: {headers} }" v-if="!activeFilter">
+          <template
+            v-slot:header="{ props: {headers} }"
+            v-if="!activeFilter"
+          >
             <thead>
               <tr>
-                <th v-for="header in headers" :key="header.value">
+                <th
+                  v-for="header in headers"
+                  :key="header.value"
+                >
                   <div class="text-center">
                     <div v-if="!header.text"></div>
                     <v-text-field
@@ -250,15 +342,24 @@
           </template>
 
           <template v-slot:item.ldap="{ item }">
-            <v-icon :color="item.ldap ? 'green' : 'red'" v-text="item.ldap ? 'done' : 'clear'" />
+            <v-icon
+              :color="item.ldap ? 'green' : 'red'"
+              v-text="item.ldap ? 'done' : 'clear'"
+            />
           </template>
 
           <template v-slot:no-results>
-            <v-alert color="error" icon="warning">No results for "{{ search }}" were found.</v-alert>
+            <v-alert
+              color="error"
+              icon="warning"
+            >No results for "{{ search }}" were found.</v-alert>
           </template>
 
           <template v-slot:no-data>
-            <v-alert color="error" icon="warning">No data available</v-alert>
+            <v-alert
+              color="error"
+              icon="warning"
+            >No data available</v-alert>
           </template>
         </v-data-table>
 
@@ -272,13 +373,20 @@
         />
 
         <!-- dialog -->
-        <v-dialog v-model="dialog" max-width="800px" persistent>
+        <v-dialog
+          v-model="dialog"
+          max-width="800px"
+          persistent
+        >
           <!-- header -->
           <v-card>
             <v-card-title>
               <span class="headline">{{ formTitle }}</span>
               <v-spacer />
-              <v-btn icon @click="dialog = false">
+              <v-btn
+                icon
+                @click="dialog = false"
+              >
                 <v-icon>cancel</v-icon>
               </v-btn>
             </v-card-title>
@@ -287,7 +395,13 @@
               <v-container grid-list-md>
                 <v-layout wrap>
                   <!-- Fields -->
-                  <v-flex v-for="(field, index) in formFields" :key="field.name" xs12 sm12 md12>
+                  <v-flex
+                    v-for="(field, index) in formFields"
+                    :key="field.name"
+                    xs12
+                    sm12
+                    md12
+                  >
                     <!-- bool -->
                     <v-switch
                       v-if="field.data_type === 'BooleanField'"
@@ -317,6 +431,13 @@
                       :data="editedItem[field.name]"
                       :editable="!view"
                       @input="editedItem[field.name] = $event"
+                    />
+                    <!-- Form designer -->
+                    <!-- TODO: watcher for return value and meta-->
+                    <app-sections
+                      v-else-if="field.name === 'sections'"
+                      :xx="editSection"
+                      @save="newSection($event)"
                     />
                     <!-- lookups -->
                     <template v-else-if="field.lookup !== null">
@@ -382,8 +503,17 @@
             <!-- footer -->
             <v-card-actions>
               <v-spacer />
-              <v-btn color="blue darken-1" text @click="close">Cancel</v-btn>
-              <v-btn color="blue darken-1" text :disabled="view" @click="save">Save</v-btn>
+              <v-btn
+                color="blue darken-1"
+                text
+                @click="close"
+              >Cancel</v-btn>
+              <v-btn
+                color="blue darken-1"
+                text
+                :disabled="view"
+                @click="save"
+              >Save</v-btn>
             </v-card-actions>
           </v-card>
         </v-dialog>
@@ -399,6 +529,7 @@ import AppComboBox from '@/components/inputs/AppComboBox'
 import AppTextField from '@/components/inputs/AppTextField'
 import AppSelect from '@/components/inputs/AppSelect'
 import AppPasswordField from '@/components/inputs/AppPasswordField'
+import AppSections from '@/components/SectionWrapper'
 import { mapGetters, mapActions } from 'vuex'
 
 import PermissionAllocation from '@/components/inputs/PermissionAllocation'
@@ -419,7 +550,8 @@ export default {
     permissionAllocation: PermissionAllocation,
     appWorkflowDesigner: AppWorkflowDesigner,
     appFilter: AppFilter,
-    appSignature: AppSignature
+    appSignature: AppSignature,
+    appSections: AppSections
   },
 
   props: {
@@ -490,7 +622,15 @@ export default {
       // table session settings
       dense: 'session/dense'
     }),
-    quickFilters () {
+    editSection () {
+      return Object.keys(this.editedItem)
+        .filter(key => ['sections', 'fields_text', 'fields_bool'].includes(key))
+        .reduce((obj, key) => {
+          obj[key] = this.editedItem[key]
+          return obj
+        }, {})
+    },
+    quickFilterString () {
       const quickFilters = this.headers.filter(
         filter => filter.active === true
       )
@@ -571,7 +711,7 @@ export default {
         this.loadData(true)
       }
     },
-    quickFilters (val) {
+    quickFilterString (val) {
       this.loadData(true)
     }
   },
@@ -584,6 +724,11 @@ export default {
       // table session settings
       tableSettings: 'session/setTable'
     }),
+    newSection (payload) {
+      for (let key of Object.keys(payload)) {
+        this.editedItem[key] = payload[key]
+      }
+    },
     convert (obj, config) {
       // iterate fields
       for (let [key, value] of Object.entries(obj)) {
@@ -640,10 +785,13 @@ export default {
         const postFields = resp.data.post
         const formFields = []
         const initItem = {}
+        const sections = []
         for (let keyField of Object.keys(postFields)) {
           let field = postFields[keyField]
           field.name = keyField
-          formFields.push(field)
+          if (field.name !== 'fields_text' && field.name !== 'fields_bool' && field.name !== 'sections') formFields.push(field)
+          // push sections, text_fields, bool_fields as single object
+          if (field.name === 'fields_text' || field.name === 'fields_bool' || field.name === 'sections') sections.push(field)
           if (postFields[keyField]['data_type'] === 'BooleanField') {
             initItem[keyField] = false
           } else if (!('data_type' in postFields[keyField])) {
@@ -661,6 +809,7 @@ export default {
             initItem[keyField] = ''
           }
         }
+        if (sections.length) formFields.push({ name: 'sections', data: sections })
         this.formFields = formFields
         this.editedItem = initItem
         this.defaultItem = initItem
@@ -702,8 +851,8 @@ export default {
       // filtering
       if (this.newurl !== '') {
         path = `${path}&${this.newurl}`
-      } else if (this.quickFilters !== '') {
-        path = `${path}&${this.quickFilters}`
+      } else if (this.quickFilterString !== '') {
+        path = `${path}&${this.quickFilterString}`
       }
       // ajax call
       axios
@@ -905,10 +1054,21 @@ export default {
     },
     save2 (sig = {}) {
       let item = this.selected[0]
-      let payload = this.editedItem
+      let payload = Object.assign({}, this.editedItem)
       // if payload of signature != empty, assign sig to payload of api call
       if (sig) Object.assign(payload, sig)
+      // strip empty fields from payload
+      for (let propName in payload) {
+        if (
+          payload[propName] === null ||
+          payload[propName] === undefined ||
+          payload[propName] === ''
+        ) {
+          delete payload[propName]
+        }
+      }
       if (this.editedIndex > -1) {
+        // edit
         // TODO: find better solution
         var u = ''
         if (!this.config['version']) {
@@ -943,16 +1103,6 @@ export default {
           })
       } else {
         // new item
-        // strip empty fields from payload
-        for (let propName in payload) {
-          if (
-            payload[propName] === null ||
-            payload[propName] === undefined ||
-            payload[propName] === ''
-          ) {
-            delete payload[propName]
-          }
-        }
         axios({
           method: 'post',
           url: `/${this.inpt}`,

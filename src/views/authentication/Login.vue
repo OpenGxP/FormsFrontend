@@ -41,14 +41,14 @@
                 id="password"
                 v-model="password"
                 prepend-icon="lock"
-                :append-icon="show1 ? 'visibility_off' : 'visibility'"
+                :append-icon="show ? 'visibility_off' : 'visibility'"
                 :rules="[rules.required, rules.min]"
-                :type="show1 ? 'text' : 'password'"
+                :type="show ? 'text' : 'password'"
                 name="password"
                 label="Password"
                 :error="err"
                 :error-messages="errMsgs"
-                @click:append="show1 = !show1"
+                @click:append="show = !show"
                 @keyup.enter="login()"
               />
               <p class="text-right">
@@ -78,37 +78,40 @@
 <script>
 export default {
   name: 'Login',
+
   data: () => ({
     err: false,
     errMsgs: [],
     color: 'primary',
     username: '',
     password: '',
-    show1: false,
+    show: false,
     rules: {
       required: value => !!value || 'Required.',
       min: v => v.length >= 8 || 'Min 8 characters'
     }
   }),
+
   methods: {
     login () {
-      const username = this.username
-      const password = this.password
-      this.$store.dispatch('login', { username, password })
+      this.$store.dispatch('authentication/authenticationAtttempt', {
+        'username': this.username,
+        'password': this.password
+      })
         .then(resp => {
-          if (resp.data.initial_password) {
+          if (resp.data.initial_password || resp.data.initial_timezone) {
             this.$router.push('/newpassword')
           } else {
-            this.$store.dispatch('initialize')
-            this.$store.dispatch('get')
-            this.$store.dispatch('session/getInbox')
-            this.$store.commit('login')
-            this.$router.push('/')
+            this.$store.dispatch('_initialize')
           }
         })
-        .catch(() => {
-          this.err = true
-          this.errMsgs = this.$store.getters.errMsg
+        .catch(err => {
+          if (err.response.status === 403) {
+            this.login()
+          } else {
+            this.err = true
+            this.errMsgs = err.response.data
+          }
         })
     }
   }

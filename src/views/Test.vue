@@ -31,6 +31,26 @@
 
         <v-flex
           xs12
+          sm6
+          md4
+          class="pa-2"
+        >
+          <v-textarea v-model="payload"
+            background-color="black">
+          </v-textarea>
+        </v-flex>
+
+        <v-flex
+          xs12
+          sm6
+          md4
+          class="pa-2"
+        >
+          <v-btn @click="test()">test</v-btn>
+        </v-flex>
+
+        <v-flex
+          xs12
           class="pa-2"
         >
           <p style="padding-top: 50px;">
@@ -64,6 +84,19 @@
 export default {
   data () {
     return {
+      payload: '',
+      p:
+        {
+          'workflow': 'wd',
+          'steps': [
+            {
+              'step': 'wdw',
+              'role': 'all',
+              'text': 'awdawd',
+              'sequence': 0
+            }
+          ]
+        },
       response: 'get',
       endpoint: '/admin/roles',
       mode: '',
@@ -78,6 +111,16 @@ export default {
       this.$http({
         method: this.mode,
         url: `${this.endpoint}`
+      })
+        .then(resp => {
+          this.response = resp.data
+        })
+    },
+    test () {
+      this.$http({
+        method: 'post',
+        url: '/md/workflows',
+        data: this.p
       })
         .then(resp => {
           this.response = resp.data

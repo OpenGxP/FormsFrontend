@@ -1,6 +1,7 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
 import auth from './store/modules/auth'
+import authentication from './store/modules/authentication'
 import initialize from './store/modules/initialize'
 import configuration from './store/modules/configuration'
 import user from './store/modules/user'
@@ -12,6 +13,7 @@ import masterdata from './store/modules/masterdata'
 // import snackbar from './store/modules/snackbar'
 import session from './store/modules/session'
 import global from './store/modules/global'
+import user2 from './store/modules/user/user'
 
 Vue.use(Vuex)
 
@@ -31,6 +33,7 @@ export default new Vuex.Store({
 
   modules: {
     auth,
+    authentication,
     masterdata,
     initialize,
     configuration,
@@ -40,6 +43,7 @@ export default new Vuex.Store({
     role,
     session,
     inbox,
-    global
+    global,
+    user2
   }
 })

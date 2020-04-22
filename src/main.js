@@ -32,8 +32,7 @@ axios.defaults.withCredentials = true
 axios.interceptors.response.use(resp => {
   return resp
 }, err => {
-  if (err.response.status === 403) {
-  } else if (err.response.status === 401) {
+  if (err.response.status === 401) {
     store.dispatch('lo')
     // return Promise.reject(err)
   } else {

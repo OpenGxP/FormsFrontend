@@ -20,6 +20,10 @@ export function heartbeat () {
     function response () {
       if (store.getters.isAuthenticated) {
         axios.patch('/logout_auto', { 'active': t })
+          .catch(err => {
+            if (err.response.status === 403 ||
+              err.response.status === 401) store.dispatch('authenticate/logout')
+          })
       }
     }
     function setActive () {
