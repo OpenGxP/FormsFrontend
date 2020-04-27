@@ -16,6 +16,7 @@
         <template v-slot:activator="{ on }">
           <v-text-field
             v-model="dateIn"
+            dense
             :label="`${label} date`"
             append-icon="event"
             readonly
@@ -63,6 +64,7 @@
         <template v-slot:activator="{ on }">
           <v-text-field
             v-model="timeIn"
+            dense
             :label="`${label} time`"
             append-icon="access_time"
             append-outer-icon="clear"

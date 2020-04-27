@@ -6,6 +6,7 @@
       v-model="selected"
       flat
       solo-inverted
+      dense
       hide-details
       prepend-inner-icon="search"
       label="search"
@@ -43,7 +44,6 @@ export default {
   computed: {
     keymap () {
       return {
-        // 'esc+ctrl' is OK.
         'shift+enter': this.focus
       }
     },

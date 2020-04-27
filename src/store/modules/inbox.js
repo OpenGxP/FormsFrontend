@@ -5,7 +5,7 @@ const state = {
 }
 
 const getters = {
-  inboxItems: (state) => state.inboxItem,
+  inboxItems: (state) => state.inboxItems,
   activeItems: (state) => state.inboxItems !== 0
 }
 
@@ -26,6 +26,7 @@ const mutations = {
 }
 
 export default {
+  namespaced: true,
   state,
   getters,
   actions,

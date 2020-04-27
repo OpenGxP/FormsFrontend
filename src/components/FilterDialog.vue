@@ -39,8 +39,7 @@
                         v-if="i === 0"
                         v-model="filter.field"
                         :items="usableFields"
-                        item-text="text"
-                        item-value="value"
+
                         return-object
                       />
                     </v-col>
@@ -166,12 +165,15 @@ import _ from 'lodash'
 export default {
 
   props: {
+    // List of filterable fields
+    // Array of objects
     fields: {
       type: Array,
       default: function () {
         return []
       }
     },
+    // Show / hide filter dialog
     dialog: {
       type: Boolean,
       default: false
@@ -180,94 +182,58 @@ export default {
 
   data () {
     return {
+      // internal data model
       filters: {
         condition: 'and',
         filter: [
           {
             id: '',
-            sequence: 1,
-            field: { value: '', text: '' },
+            field: { text: '', value: '' },
             chain: 'and',
             children: [
               {
                 id: '',
-                sequence: 1,
-                operator: '',
+                operator: 'contains',
                 value: ''
               }
             ]
           }
         ]
       },
+      // default filter
       defaultFilter: {
         id: '',
-        sequence: 1,
-        field: { value: '', text: '' },
+        field: { text: '', value: '' },
+        chain: 'and',
         children: [
           {
             id: '',
-            sequence: 1,
-            operator: '',
+            operator: 'contains',
             value: ''
           }
         ]
       },
-      operators: ['contains', 'exact', 'startswith', 'endswith']
+      operators: ['contains', 'exact', 'startswith', 'endswith'],
+      defaultOperator: 'contains'
     }
   },
 
   computed: {
     usableFields () {
       const usedFields = this.filters.filter.map(x => x.field)
-      return Array.from(this.fields.filter(x => !(usedFields.includes(x))))
+      return this.fields.filter(x => !(usedFields.includes(x)))
     },
     allConditionsFilled () {
-      // returns true if if all condition fields are filled
+      // checks if all value fields filled
       for (let filter of this.filters.filter) {
         for (let child of filter.children) {
-          if (child.value === '') return false
+          if (!child.value) return false
         }
       }
       return true
     },
     quickFilters () {
-      return this.fields.filter(field => field.quickFilter !== '').map(field => field.quickFilter)
-    }
-  },
-
-  watch: {
-    // watch state and apply val for empty filter
-    dialog: {
-      handler (val) {
-        // check if filters are empty
-        if (val && this.filters.filter[0].field.value === '') {
-          if (this.quickFilters.length) {
-            // active quickfilters
-            for (let field of this.fields) {
-              if (field.quickFilter !== '') {
-                if (this.filters.filter[0].field.value === '') {
-                  // first
-                  this.filters.filter[0].field = field
-                  this.filters.filter[0].children[0].operator = Array.from(this.operators)[0]
-                  this.filters.filter[0].children[0].value = field.quickFilter
-                } else {
-                  let tmp = _.cloneDeep(this.defaultFilter)
-                  tmp.field = field
-                  tmp.children[0].operator = Array.from(this.operators)[0]
-                  tmp.children[0].value = field.quickFilter
-                  this.filters.filter.push(tmp)
-                }
-              }
-            }
-          } else {
-            // no active quickfilters
-            this.filters.filter[0].field = Array.from(this.fields)[0]
-            this.filters.filter[0].children[0].operator = Array.from(this.operators)[0]
-          }
-        }
-      },
-      deep: true,
-      immidiate: true
+      return this.fields.filter(field => field.quickFilter).map(field => field.quickFilter)
     }
   },
 
@@ -277,6 +243,7 @@ export default {
       this.$emit('close-dialog', false)
     },
     save (close = true) {
+      // TODO: delete quickfilters when saving
       // emit query string and depending on argument close dialog or not
       let url = ''
       for (const [i, filter] of this.filters.filter.entries()) {
@@ -296,41 +263,34 @@ export default {
       if (close) { this.close() }
     },
     reset () {
-      this.filters.filter = [Object.assign({}, this.defaultFilter)]
+      this.filters.filter = [_.cloneDeep(this.defaultFilter)]
       this.$emit('filterurl', ' ')
       this.$emit('active-flag', false)
     },
     addFilter () {
-      // add new filter field condition
-      const tmp = {
-        id: '',
-        sequence: 1,
-        field: Object.assign({}, this.usableFields[0]),
-        children: [
-          {
-            id: '',
-            sequence: 1,
-            operator: Object.assign({}, this.operators[0]),
-            value: ''
-          }
-        ]
+      // add new filter field if there is one left
+      if (this.usableFields) {
+        const tmp = _.cloneDeep(this.defaultFilter)
+        tmp.field = this.usableFields[0]
+        this.filters.filter.push(tmp)
       }
-      this.filters.filter.push(tmp)
     },
     addChild (index) {
       // add new filter condition for existing field
-      this.filters.filter[index].children.push({ operator: this.operators[0] })
+      const tmp = _.cloneDeep(this.defaultFilter.children[0])
+      tmp.operator = this.defaultOperator
+      this.filters.filter[index].children.push(tmp)
     },
-    removeChild (index, i) {
+    removeChild (parentIndex, childIndex) {
       // spare last filter
       if (this.filters.filter.length === 1 && this.filters.filter[0].children.length === 1) {
-        return
-      }
-      // remove child condiction of filter
-      this.filters.filter[index].children.splice(i, 1)
-      // delete filter if all conditions got deleted
-      if (this.filters.filter[index].children.length === 0) {
-        this.filters.filter.splice(index, 1)
+      } else {
+        // remove child condiction of filter
+        this.filters.filter[parentIndex].children.splice(childIndex, 1)
+        // delete filter if all conditions got deleted
+        if (this.filters.filter[parentIndex].children.length === 0) {
+          this.filters.filter.splice(parentIndex, 1)
+        }
       }
     },
     defineActiveState () {
@@ -343,6 +303,40 @@ export default {
       } else {
         this.$emit('active-flag', true)
       }
+    }
+  },
+
+  watch: {
+    // watch state and apply val for empty filter
+    dialog: {
+      handler (val) {
+        // check for initial creation
+        if (val && this.filters.filter[0].field.value === '') {
+          if (this.quickFilters.length) {
+            // active quickfilters
+            if (this.quickFilters) {
+              for (let field of this.fields) {
+                if (field.quickFilter && this.filters.filter[0].field.value === '') {
+                  // first
+                  this.filters.filter[0].field = field
+                  this.filters.filter[0].children[0].operator = this.defaultOperator
+                  this.filters.filter[0].children[0].value = field.quickFilter
+                } else if (field.quickFilter) {
+                  // additional
+                  const tmp = _.cloneDeep(this.defaultFilter)
+                  tmp.field = field
+                  tmp.children[0].value = field.quickFilter
+                  this.filters.filter.push(tmp)
+                }
+              }
+            }
+          } else {
+            this.filters.filter[0].field = this.usableFields[0]
+          }
+        }
+      },
+      deep: true,
+      immidiate: true
     }
   }
 }

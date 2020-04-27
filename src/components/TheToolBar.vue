@@ -53,9 +53,9 @@
         </span>
       </v-toolbar-title>
 
-      <app-search />
-
       <v-spacer />
+
+      <app-search />
 
       <v-tooltip
         v-if="collapse"
@@ -82,84 +82,90 @@
         <span>Inbox</span>
       </v-tooltip>
 
-      <v-tooltip
-        v-if="user && collapse"
-        bottom
-      >
-        <template v-slot:activator="{ on }">
-          <v-btn
-            class="hidden-sm-and-down"
-            icon
-            v-on="on"
-            @click="toProfile()"
-          >
-            <v-icon>person</v-icon>
-          </v-btn>
-        </template>
-        <span>Profile</span>
-      </v-tooltip>
-
-      <v-tooltip
+      <v-menu
         v-if="collapse"
-        bottom
+        offset-y
       >
-        <template v-slot:activator="{ on }">
-          <v-menu
-            offset-y
-            v-on="on"
-          >
-            <template v-slot:activator="{ on }">
+        <template v-slot:activator="{ on: menu }">
+          <v-tooltip bottom>
+            <template v-slot:activator="{ on: tooltip }">
               <v-btn
                 class="hidden-sm-and-down"
                 icon
-                v-on="on"
+                v-on="{ ...tooltip, ...menu }"
               >
                 <v-icon>settings</v-icon>
               </v-btn>
             </template>
-            <v-list>
-              <v-list-item
-                v-for="(item, index) in items"
-                :key="index"
-                @click="navigate(item.url)"
-              >
-                <v-list-item-icon>
-                  <v-icon v-text="item.icon" />
-                </v-list-item-icon>
-                <v-list-item-content>
-                  <v-list-item-title v-text="item.title" />
-                </v-list-item-content>
-              </v-list-item>
-              <v-list-item @click="test()">
-                <v-list-item-icon>
-                  <v-icon>help_outline</v-icon>
-                </v-list-item-icon>
-                <v-list-item-content>
-                  <v-list-item-title v-text="'Show Hotkeys'" />
-                </v-list-item-content>
-              </v-list-item>
-            </v-list>
-          </v-menu>
+            <span>Settings</span>
+          </v-tooltip>
         </template>
-        <span>Settings</span>
-      </v-tooltip>
+        <v-card min-width="200px">
+          <v-list dense>
+            <v-list-item
+              v-for="(item, index) in items"
+              :key="index"
+              @click="navigate(item.url)"
+            >
+              <v-list-item-icon>
+                <v-icon>{{item.icon}}</v-icon>
+              </v-list-item-icon>
+              <v-list-item-content>
+                <v-list-item-title>{{ item.title }}</v-list-item-title>
+              </v-list-item-content>
+            </v-list-item>
+            <v-divider></v-divider>
+            <v-list-item @click="test()">
+              <v-list-item-icon>
+                <v-icon>help_outline</v-icon>
+              </v-list-item-icon>
+              <v-list-item-content>
+                <v-list-item-title v-text="'Show Hotkeys'" />
+              </v-list-item-content>
+            </v-list-item>
+          </v-list>
+        </v-card>
+      </v-menu>
 
-      <v-tooltip
-        v-if="collapse"
-        bottom
+      <v-menu
+        v-if="user && collapse"
+        offset-y
       >
-        <template v-slot:activator="{ on }">
-          <v-btn
-            class="hidden-sm-and-down"
-            icon
-            v-on="on"
-            @click="logout()"
-          >
-            <v-icon>input</v-icon>
-          </v-btn>
+        <template v-slot:activator="{ on: menu }">
+          <v-tooltip bottom>
+            <template v-slot:activator="{ on: tooltip }">
+              <v-btn
+                class="hidden-sm-and-down"
+                icon
+                v-on="{ ...tooltip, ...menu }"
+              >
+                <v-icon>person</v-icon>
+              </v-btn>
+            </template>
+            <span>Profil & Account</span>
+          </v-tooltip>
         </template>
-        <span>Logout</span>
-      </v-tooltip>
+        <v-card min-width="200px">
+          <v-list dense>
+            <v-subheader>Profile</v-subheader>
+            <v-list-item
+              v-for="(item, index) in profileItems"
+              :key="index"
+              @click="navigate(item.url)"
+            >
+              <v-list-item-content>
+                <v-list-item-title>{{ item.title }}</v-list-item-title>
+              </v-list-item-content>
+            </v-list-item>
+            <v-divider></v-divider>
+            <v-list-item @click="logout()">
+              <v-list-item-content>
+                <v-list-item-title>Log out</v-list-item-title>
+              </v-list-item-content>
+            </v-list-item>
+          </v-list>
+        </v-card>
+      </v-menu>
 
       <v-btn
         class="hidden-md-and-up"
@@ -193,6 +199,9 @@ export default {
     text: '',
     collapse: true,
     drawer2: false,
+    profileItems: [
+      { title: 'Profile', icon: 'calendar_today', url: '/profile' }
+    ],
     items: [
       { title: 'Upcoming Tasks', icon: 'calendar_today', url: '/filter' },
       { title: 'Assignements', icon: 'assignment_ind', url: '/filter' }
@@ -202,7 +211,7 @@ export default {
   computed: {
     ...mapGetters({
       // session settings
-      numInbox: 'inboxItems'
+      numInbox: 'inbox/inboxItems'
     }),
     isAuth () {
       return this.$store.getters.isAuthenticated

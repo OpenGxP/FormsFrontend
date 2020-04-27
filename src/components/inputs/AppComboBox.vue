@@ -1,6 +1,7 @@
 <template>
   <v-combobox
     v-model="content"
+    dense
     :items="items"
     :search-input.sync="search"
     hide-selected

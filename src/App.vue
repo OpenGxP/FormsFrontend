@@ -1,5 +1,5 @@
 <template>
-  <v-app>
+  <v-app v-hotkey="keymap">
     <app-banner></app-banner>
     <app-toolbar v-if="isAuthenticated" />
     <app-snack-bar></app-snack-bar>
@@ -32,6 +32,17 @@ export default {
   computed: {
     isAuthenticated () {
       return this.$store.getters.isAuthenticated
+    },
+    keymap () {
+      return {
+        'F1': this.nice
+      }
+    }
+  },
+
+  methods: {
+    nice () {
+      if (this.isAuthenticated) this.$store.dispatch('authentication/logout')
     }
   },
 
@@ -42,18 +53,6 @@ export default {
       // Chrome requires returnValue to be set.
       event.returnValue = ''
     })
-  },
-
-  mounted () {
-    // for scoping
-    /*
-    var vm = this
-    window.addEventListener('keyup', function (event) {
-      if (event.keyCode === 112) {
-        vm.newItem()
-      }
-    })
-    */
   }
 }
 </script>

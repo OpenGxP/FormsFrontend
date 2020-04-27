@@ -1,21 +1,55 @@
 <template>
-  <v-overlay :value="active" :absolute="true" :opacity="0.5" :z-index="100" :color="config.color">
-    <v-card width="300">
-      <v-card-title>Global Shortcuts</v-card-title>
+  <v-overlay
+    :value="active"
+    :absolute="true"
+    :opacity="0.5"
+    :z-index="100"
+    :color="config.color"
+  >
+    <v-card width="700">
+      <v-card-title>Keyboard shortcuts</v-card-title>
       <v-divider></v-divider>
       <v-card-text>
-        <v-row v-for="(entry, index) in globals" :key="index">
-          <v-col v-text="entry.title" />
-          <v-col>
-            <span>
-              <kbd>{{entry.markup1}}</kbd> +
-              <kbd>{{entry.markup2}}</kbd>
-            </span>
+        <v-row>
+          <v-col
+            v-for="map in keyMaps"
+            :key="map.category"
+            cols="6"
+          >
+            <v-card
+              flat
+              class="px-2"
+            >
+              <v-row
+                v-text="map.category"
+                class="subtitle-1 font-weight-bold"
+              ></v-row>
+              <v-row
+                v-for="shortcut in map.shortcuts"
+                :key="shortcut.title"
+              >
+                <v-col v-text="shortcut.title" />
+                <v-col>
+                  <span
+                    v-for="markup in shortcut.markup"
+                    :key="markup"
+                  >
+                    <kbd>{{ markup }}</kbd>
+                    <span v-if="shortcut.markup.length > 1 && markup !== shortcut.markup.slice(-1)[0]"> + </span>
+                  </span>
+                </v-col>
+              </v-row>
+            </v-card>
           </v-col>
         </v-row>
       </v-card-text>
       <v-card-actions>
-        <v-btn text color="primary" @click="hide()">Hide</v-btn>
+        <v-spacer/>
+        <v-btn
+          text
+          color="primary"
+          @click="hide()"
+        >Hide</v-btn>
       </v-card-actions>
     </v-card>
   </v-overlay>
@@ -29,9 +63,31 @@ export default {
 
   data () {
     return {
-      globals: [
-        { title: 'Toggle Toolbar', markup1: 'shift', markup2: 'space' },
-        { title: 'Toggle Search', markup1: 'shift', markup2: 'enter' }
+      keyMaps: [
+        {
+          category: 'Global shortcuts',
+          shortcuts: [
+            { title: 'Toggle toolbar', markup: ['shift', 'space'] },
+            { title: 'Toggle search', markup: ['shift', 'enter'] },
+            { title: 'Log out', markup: ['F1'] },
+            { title: 'Keyboard shortcuts', markup: ['?'] }
+          ]
+        },
+        {
+          category: 'Actions',
+          shortcuts: [
+            { title: 'Create entry', markup: ['c'] },
+            { title: 'Edit entry', markup: ['e'] },
+            { title: 'View entry', markup: ['v'] },
+            { title: 'Delete entry', markup: ['d'] }
+          ]
+        },
+        {
+          category: 'Navigation',
+          shortcuts: [
+            { title: 'Navigate home', markup: ['g'] }
+          ]
+        }
       ]
     }
   },

@@ -48,14 +48,27 @@
 
           <!-- TODO: replace v-if with computed property -->
           <template v-for="(v, k, i) in data.subjects">
-            <v-list-item
-              v-if="$can('all', 'global') || $can('read', `${k}`)"
-              :key="i"
-              router
-              :to="`/api/${key}/${k}`"
-            >
-              <v-list-item-title v-text="v.title" />
-            </v-list-item>
+            <template v-if="key === 'logs'">
+              <v-list-item
+                v-if="$can('all', 'global') || $can('read', `${k}log`)"
+                :key="i"
+                router
+                :to="`/api/${key}/${k}`"
+              >
+                <v-list-item-title v-text="v.title" />
+              </v-list-item>
+            </template>
+
+            <template v-else>
+              <v-list-item
+                v-if="$can('all', 'global') || $can('read', `${k}`)"
+                :key="i"
+                router
+                :to="`/api/${key}/${k}`"
+              >
+                <v-list-item-title v-text="v.title" />
+              </v-list-item>
+            </template>
           </template>
         </v-list-group>
       </template>

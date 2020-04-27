@@ -1,6 +1,7 @@
 <template>
   <v-autocomplete
     v-model="content"
+    dense
     :items="items"
     :hint="hint"
     :required="required"

@@ -3,6 +3,7 @@
   <div
     ref="main"
     tabindex="0"
+    v-hotkey.stop="keymap"
   >
     <!-- @keyup.67="newItem()" @keyup.69="editItem()" @keyup.86="viewItem()" -->
     <!-- toolbar -->
@@ -31,7 +32,7 @@
       />
       <!-- view -->
       <v-tooltip
-        v-if="config['post'] && ($can('all', 'global') || $can('view', vlink))"
+        v-if="config['post'] && ($can('all', 'global') || $can('read', vlink))"
         bottom
       >
         <template v-slot:activator="{ on }">
@@ -276,7 +277,10 @@
               text
               @click="columnSelect = true"
             >
-              <v-icon left>expand_more</v-icon> Columns
+              <v-icon
+                left
+                :color="binaryArrayHeaders.length !== headers.length ? 'primary' : 'white'"
+              >expand_more</v-icon>Columns {{`${binaryArrayHeaders.length} of ${headers.length}`}}
             </v-btn>
           </template>
         </v-card-title>
@@ -286,6 +290,7 @@
           v-model="selected"
           :headers="selectedHeaders"
           fixed-header
+          hide-default-header
           :items="items"
           :search="search"
           :dense="dense"
@@ -298,12 +303,18 @@
           :server-items-length="recordCount"
           :loading="loading"
           :footer-props="{
-            itemsPerPageOptions: [5, 10, 15, 25]
+            itemsPerPageOptions: [5, 10, 15, 25],
+            showFirstLastPage: true,
+            firstIcon: 'first_page',
+            lastIcon: 'last_page',
+            prevIcon: 'chevron_left',
+            nextIcon: 'chevron_right'
           }"
           @click:row="rowSingleSelect"
           @dblclick:row="editItem()"
         >
-          <template
+
+          <!--<template
             v-slot:header="{ props: {headers} }"
             v-if="!activeFilter"
           >
@@ -325,6 +336,57 @@
                       @click:append="header.quickFilter = ''; header.active = false"
                     ></v-text-field>
                   </div>
+                </th>
+              </tr>
+            </thead>
+          </template>-->
+
+          <template v-slot:header="{ props: { headers, options }, on: { sort } }">
+            <thead>
+              <tr>
+                <th
+                  v-for="(header, index) in headers"
+                  :key="header.text"
+                  :class="['column sortable', options.sortDesc ? 'desc' : 'asc', header.value === options.sortBy[0] ? 'active' : '']"
+                  @click="sort(header.value)"
+                >
+                  <v-row v-if="!index && tableSelect"></v-row>
+                  <v-row
+                    v-else
+                    align="center"
+                    justify="center"
+                  >
+                    <v-col>
+                      <v-icon
+                        v-if="options.sortBy.includes(header.value)"
+                        small
+                        color="primary"
+                      >{{ options.sortDesc[0] ? 'arrow_downward' : 'arrow_upward' }}</v-icon>
+                      <span class="subtitle-2 white--text">{{ header.text }}</span>
+                      <v-spacer />
+                    </v-col>
+                    <v-col>
+                      <quick-filter
+                        v-if="!activeFilter"
+                        v-model="header.quickFilter"
+                        @change-val="header.active = $event"
+                      ></quick-filter>
+                      <!--
+                      <quick-filter
+                        v-if="!activeFilter && postConfig.keys.includes(header.value)"
+                        v-model="header.quickFilter"
+                        :options="postConfig[header.value].lookup ? postConfig[header.value].lookup.data : []"
+                        @change-val="header.active = $event"
+                      ></quick-filter>
+                      <quick-filter
+                        v-else-if="!activeFilter"
+                        v-model="header.quickFilter"
+                        @change-val="header.active = $event"
+                      ></quick-filter>
+                      -->
+                    </v-col>
+                  </v-row>
+
                 </th>
               </tr>
             </thead>
@@ -537,6 +599,7 @@ import AppWorkflowDesigner from '@/components/inputs/AppWorkflowDesigner'
 
 import AppFilter from '@/components/FilterDialog'
 import AppSignature from '@/components/TheSignature'
+import quickFilter from '@/components/AppQuickfilter'
 
 export default {
   name: 'BaseDataTable',
@@ -551,7 +614,8 @@ export default {
     appWorkflowDesigner: AppWorkflowDesigner,
     appFilter: AppFilter,
     appSignature: AppSignature,
-    appSections: AppSections
+    appSections: AppSections,
+    quickFilter
   },
 
   props: {
@@ -678,6 +742,20 @@ export default {
       if (this.selected[0]['status'] !== 'draft') return false
       return true
     },
+    keymap () {
+      return {
+        'c': {
+          // to prevent typing c in case of autofocus
+          keyup: this.newItem
+        },
+        'e': {
+          keyup: this.editItem
+        },
+        'v': {
+          keyup: this.viewItem
+        }
+      }
+    },
     filterFields () {
       // return this.formFields.map(field => field.name)
       return this.headers.map(field => field.value)
@@ -685,6 +763,16 @@ export default {
   },
 
   watch: {
+    activeFilter: {
+      handler (val) {
+        if (val) {
+          this.headers.map(header => {
+            header.active = false
+            return header
+          })
+        }
+      }
+    },
     dialog (val) {
       val || this.close()
       if (!val) {
@@ -707,9 +795,7 @@ export default {
       deep: true
     },
     newurl (val) {
-      if (val !== '') {
-        this.loadData(true)
-      }
+      this.loadData(true)
     },
     quickFilterString (val) {
       this.loadData(true)
@@ -849,9 +935,9 @@ export default {
         path = `/${this.inpt}?limit=${itemsPerPage}&offset=${offset}`
       }
       // filtering
-      if (this.newurl !== '') {
+      if (this.newurl !== '' && this.activeFilter) {
         path = `${path}&${this.newurl}`
-      } else if (this.quickFilterString !== '') {
+      } else if (this.quickFilterString !== '' && !this.activeFilter) {
         path = `${path}&${this.quickFilterString}`
       }
       // ajax call
@@ -886,9 +972,11 @@ export default {
             }
             this.headers = Filters
           }
-          this.binaryArrayHeaders = Array.from(
-            Array(this.headers.length).keys()
-          )
+          if (!this.binaryArrayHeaders.length) {
+            this.binaryArrayHeaders = Array.from(
+              Array(this.headers.length <= 7 ? this.headers.length : 7).keys()
+            )
+          }
           // set laoding state
           this.loaded = true
         })
@@ -925,7 +1013,7 @@ export default {
     },
     openLog () {
       // if no object is selected move to according log overview
-      if (!this.selected.length) { this.$router.push({ path: `/api/logs/${this.vlink}` }) }
+      if (!this.selected.length) { this.$router.push({ path: `/api/${this.config.log.rel}` }) }
       // TODO: else show log entries of selected object
     },
     changeStatus (target) {

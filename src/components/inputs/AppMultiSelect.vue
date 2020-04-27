@@ -2,6 +2,7 @@
   <v-select
     ref="test"
     v-model="value"
+    dense
     :items="items"
     :label="label"
     multiple

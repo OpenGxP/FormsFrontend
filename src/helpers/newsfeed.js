@@ -2,7 +2,7 @@ import store from '../store'
 
 export function newsfeed () {
   if (store.getters.isAuthenticated) {
-    store.dispatch('updateInbox')
+    store.dispatch('inbox/updateInbox')
   }
   setTimeout(newsfeed, 5000)
 }

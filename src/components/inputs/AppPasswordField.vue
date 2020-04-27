@@ -1,6 +1,7 @@
 <template>
   <v-text-field
     v-model="val"
+    dense
     :hint="cHint"
     :required="required"
     :disabled="!editable"

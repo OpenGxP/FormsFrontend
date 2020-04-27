@@ -1,22 +1,20 @@
 <template>
-
-  <app-section></app-section>
-
+  <div>
+    <div>{{ quick }}</div>
+    <quick-filter v-model="quick"></quick-filter>
+  </div>
 </template>
 
 <script>
-import appSection from '@/components/SectionWrapper'
+import quickFilter from '@/components/AppQuickfilter'
 
 export default {
-  data () {
-    return {
-      tab: null,
-      operators: ['contains', 'exact', 'startswith', 'endswith']
-    }
-  },
+  data: () => ({
+    quick: 'test'
+  }),
 
   components: {
-    appSection
+    quickFilter
   }
 }
 </script>

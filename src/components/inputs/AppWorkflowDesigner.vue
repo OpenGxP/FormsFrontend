@@ -6,9 +6,9 @@
       fluid
       grid-list-md
     >
-      <template v-for="(step, index) in steps">
+      <template v-for="step in steps">
         <v-layout
-          :key="index"
+          :key="step.sequence"
           column
         >
           <v-flex>
@@ -55,12 +55,12 @@
                   >
                     <!-- field predecessors -->
                     <v-select
-                      v-if="index !== 0"
+                      v-if="step.sequence !== 0"
                       v-model="step.predecessors"
                       :items="predecessors.filter(ele => ele !== step.step)"
                       :label="meta.predecessors.verbose_name"
                       multiple
-                      :disabled="index === 0 || !meta.predecessors.editable || !editable || !step.step"
+                      :disabled="step.sequence === 0 || !meta.predecessors.editable || !editable || !step.step"
                       :hint="meta.predecessors.help_text"
                     />
                   </v-flex>
@@ -99,7 +99,7 @@
                   -->
 
                   <v-btn
-                    v-if="index !== 0 && editable"
+                    v-if="step.sequence !== 0 && editable"
                     absolute
                     dark
                     fab
@@ -107,7 +107,7 @@
                     right
                     color="pink"
                     small
-                    @click="remove(index)"
+                    @click="remove(step.sequence)"
                   >
                     <v-icon>remove</v-icon>
                   </v-btn>
@@ -131,6 +131,7 @@
 
 <script>
 import { required } from 'vuelidate/lib/validators'
+import _ from 'lodash'
 
 export default {
   props: {
@@ -148,20 +149,10 @@ export default {
       default: false
     }
   },
-  // ['data', 'meta', 'editable'],
 
   data () {
     return {
-      steps: [
-        {
-          step: '',
-          role: '',
-          predecessors: [],
-          text: '',
-          sequence: 0
-          // electronicSignature: false
-        }
-      ],
+      steps: [],
       defaultSteps: [
         {
           step: '',
@@ -209,7 +200,7 @@ export default {
     data: {
       handler (val) {
         // check value of prop data, if emtpy assign clone of default step (empty step)
-        if (val.length === 0) this.steps = this.defaultSteps.slice()
+        if (val.length === 0) this.steps = _.cloneDeep(this.defaultSteps)
         else if (this.steps !== val) {
           // if there is more than one step, sort arry by sequence
           if (val.length > 1) this.steps = val.sort((a, b) => (a.sequence > b.sequence) ? 1 : ((b.sequence > a.sequence) ? -1 : 0))
@@ -231,7 +222,7 @@ export default {
           role: '',
           predecessors: [],
           text: '',
-          sequence: Math.max.apply(Math, this.steps.map(x => x.sequence)) + 1
+          sequence: Math.max.apply(Math, this.steps.map(step => step.sequence)) + 1
           // electronicSignature: false
         })
       }
@@ -246,7 +237,8 @@ export default {
           }
         }
       }
-      this.steps.splice(index, 1)
+      // remove step
+      this.steps = _.reject(this.steps, step => step.sequence === index)
     },
     isReferenced (val) {
       // checks if step is referenceed
@@ -264,9 +256,6 @@ export default {
       }
       return false
     },
-    pre (self) {
-      //
-    },
     submitStep () {
       this.$v.touch()
     },
@@ -274,7 +263,7 @@ export default {
       this.$emit('input', this.steps)
     },
     reset () {
-      this.steps = this.defaultSteps.slice()
+      this.steps = _.cloneDeep(this.defaultSteps)
     }
   }
 }
