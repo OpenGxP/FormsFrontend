@@ -18,6 +18,8 @@ import TheSnackBar from '@/components/TheSnackBar'
 import TheOverlay from '@/components/TheOverlay'
 import TheBanner from '@/components/globals/TheBanner'
 
+import colors from 'vuetify/lib/util/colors'
+
 export default {
   name: 'App',
 
@@ -35,7 +37,8 @@ export default {
     },
     keymap () {
       return {
-        'F1': this.nice
+        'F1': this.nice,
+        'F2': this.test
       }
     }
   },
@@ -43,6 +46,13 @@ export default {
   methods: {
     nice () {
       if (this.isAuthenticated) this.$store.dispatch('authentication/logout')
+    },
+    test () {
+      let cols = [colors.purple, colors.yellow, colors.red, colors.green, colors.pink, colors.grey]
+      let col = cols[Math.floor(Math.random() * cols.length)]
+      this.$vuetify.theme.themes.dark = {
+        primary: col
+      }
     }
   },
 

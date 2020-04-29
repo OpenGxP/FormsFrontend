@@ -3,7 +3,7 @@ FROM node:13.10-alpine
 RUN mkdir -p /data/app
 WORKDIR /data/app
 COPY . /data/app/
-# make node user owener of data
+# make node user owner of data
 RUN chown -R node:node /data/app
 USER node
 # expose port 8080

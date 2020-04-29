@@ -276,11 +276,12 @@
               tile
               text
               @click="columnSelect = true"
+              :color="binaryArrayHeaders.length !== headers.length ? 'primary' : 'white'"
             >
               <v-icon
                 left
                 :color="binaryArrayHeaders.length !== headers.length ? 'primary' : 'white'"
-              >expand_more</v-icon>Columns {{`${binaryArrayHeaders.length} of ${headers.length}`}}
+              >expand_more</v-icon>{{`${binaryArrayHeaders.length} of ${headers.length}`}} Columns
             </v-btn>
           </template>
         </v-card-title>
@@ -556,6 +557,7 @@
                       :autofocus="index === 0"
                       :error="errorMsgs[field.name] ? true : false"
                       :errormsgs="errorMsgs[field.name] ? errorMsgs[field.name] : []"
+                      @enter-event="save()"
                     />
                   </v-flex>
                 </v-layout>
@@ -754,6 +756,11 @@ export default {
         'v': {
           keyup: this.viewItem
         }
+      }
+    },
+    dialogKeymap () {
+      return {
+        'ctrl+s': this.save
       }
     },
     filterFields () {

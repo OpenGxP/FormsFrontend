@@ -10,6 +10,7 @@
     :error-messages="errormsgs"
     clearable
     @input="handleInput"
+    @keydown.enter="save()"
   >
     <template v-slot:label>
       <div>
@@ -57,6 +58,9 @@ export default {
   methods: {
     handleInput (e) {
       this.$emit('input', this.val)
+    },
+    save () {
+      this.$emit('enter-event')
     }
   }
 }

@@ -25,7 +25,8 @@ Vue.use(VueHotkey)
 
 // configure axios
 Vue.prototype.$http = axios
-axios.defaults.baseURL = (process.env.NODE_ENV === 'development') ? 'http://127.0.0.1:8000' : 'https://staging.opengxp.com/api'
+// axios.defaults.baseURL = (process.env.NODE_ENV === 'development') ? 'http://127.0.0.1:8000' : 'https://staging.opengxp.com/api'
+axios.defaults.baseURL = process.env.VUE_APP_BACKEND
 axios.defaults.withCredentials = true
 
 // interceptors
