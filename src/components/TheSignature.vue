@@ -21,25 +21,28 @@
         <v-card-text>
           <v-form>
             <v-textarea
-              v-if="com != 'none'"
+              v-if="com !== 'none'"
+              :autofocus="com != 'none'"
               id="Comment"
               v-model="comment"
               prepend-icon="comment"
               name="Comment"
               :label="labelComment"
+              :error="!!errMsgs.comment.length"
+              :error-messages="errMsgs.comment"
               clearable
               @keyup.enter="setSignature()"
             />
             <v-text-field
               v-if="sig != 'logging'"
               v-model="username"
-              autofocus
+              :autofocus="com === 'none'"
               prepend-icon="person"
               name="login"
               :label="labelUsername"
               type="text"
-              :error="err"
-              :error-messages="errMsgs"
+              :error="!!errMsgs.sig_user.length"
+              :error-messages="errMsgs.sig_user"
               clearable
               @keyup.enter="setSignature()"
             />
@@ -53,8 +56,8 @@
               :type="show1 ? 'text' : 'password'"
               name="Password"
               :label="labelPassword"
-              :error="err"
-              :error-messages="errMsgs"
+              :error="!!errMsgs.sig_pw.length"
+              :error-messages="errMsgs.sig_pw"
               clearable
               @click:append="show1 = !show1"
               @keyup.enter="setSignature()"
@@ -84,6 +87,8 @@
 </template>
 
 <script>
+import _ from 'lodash'
+
 export default {
   name: 'Signature',
 
@@ -101,6 +106,12 @@ export default {
     sig: {
       type: String,
       default: 'signature'
+    },
+    error: {
+      type: Object,
+      default () {
+        return []
+      }
     }
   },
 
@@ -108,7 +119,16 @@ export default {
     return {
       dialogName: 'Signature',
       err: false,
-      errMsgs: [],
+      errMsgs: {
+        comment: [],
+        sig_user: [],
+        sig_pw: []
+      },
+      defaultErrMsgs: {
+        comment: [],
+        sig_user: [],
+        sig_pw: []
+      },
       color: 'primary',
       username: '',
       password: '',
@@ -141,9 +161,19 @@ export default {
     dialog: {
       handler () {
         this.username = this.comment = this.password = ''
+        this.errMsgs = _.cloneDeep(this.defaultErrMsgs)
       },
       deep: true,
       immediate: true
+    },
+    error: {
+      deep: true,
+      imidiate: true,
+      handler (val) {
+        if (!_.isEmpty(val)) {
+          this.handleErrors(val)
+        }
+      }
     }
   },
 
@@ -158,8 +188,13 @@ export default {
     // push close to parent
     closeDialog () {
       this.$emit('close-dialog', false)
+    },
+    handleErrors (errors) {
+      if (!Object.keys(errors).includes('comment')) this.errMsgs.comment = []
+      if (!Object.keys(errors).includes('sig_user')) this.errMsgs.comment = []
+      if (!Object.keys(errors).includes('sig_pw')) this.errMsgs.comment = []
+      this.errMsgs = { ...this.errMsgs, ...errors }
     }
   }
-
 }
 </script>

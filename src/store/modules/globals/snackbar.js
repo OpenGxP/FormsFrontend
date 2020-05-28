@@ -6,7 +6,7 @@ const state = {
     appearance: mode.info,
     mode: 'multi-line',
     timeout: 3000,
-    message: 'Test!',
+    message: [''],
     y: 'top'
     // x: 'left'
   },
@@ -14,7 +14,7 @@ const state = {
     appearance: mode.info,
     mode: 'multi-line',
     timeout: 3000,
-    message: 'Message',
+    message: [''],
     y: 'top'
   }
 }

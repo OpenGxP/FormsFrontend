@@ -24,9 +24,12 @@ Vue.use(vuelidate)
 Vue.use(VueHotkey)
 
 // configure axios
-Vue.prototype.$http = axios
-// axios.defaults.baseURL = (process.env.NODE_ENV === 'development') ? 'http://127.0.0.1:8000' : 'https://staging.opengxp.com/api'
-axios.defaults.baseURL = process.env.VUE_APP_BACKEND
+Vue.prototype.$http = axios;
+(async () => {
+  const res = await fetch('./runtimeEndpoint.json')
+  const json = await res.json()
+  axios.defaults.baseURL = json.endpoint
+})()
 axios.defaults.withCredentials = true
 
 // interceptors

@@ -1,17 +1,22 @@
 <template>
   <v-container>
-    <v-layout>
-      <v-flex>
+    <v-row>
+      <v-col>
         <div
           style="margin-bottom: 40px;"
           class="display-3"
         >
           404 - Page not found
         </div>
-      </v-flex>
-    </v-layout>
-    <v-layout>
-      <v-flex>
+      </v-col>
+    </v-row>
+    <v-row>
+      <v-col>
+        <img src="https://media.giphy.com/media/mBYPAiqYlrM5FyzWXM/giphy.gif">
+      </v-col>
+    </v-row>
+    <v-row>
+      <v-col>
         <v-btn
           v-if="auth"
           @click="goBack"
@@ -21,8 +26,8 @@
         <v-btn to="/">
           {{ msg }}
         </v-btn>
-      </v-flex>
-    </v-layout>
+      </v-col>
+    </v-row>
   </v-container>
 </template>
 

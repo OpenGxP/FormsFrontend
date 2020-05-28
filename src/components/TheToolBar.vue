@@ -3,7 +3,8 @@
     <!-- main drawer -->
     <app-navigation-drawer
       v-model="drawer"
-      :user="user"
+      :user="username"
+      v-hotkey="keymap"
     />
 
     <!-- temp mobile drawer -->
@@ -127,8 +128,10 @@
         </v-card>
       </v-menu>
 
+      <span v-text="username" />
+
       <v-menu
-        v-if="user && collapse"
+        v-if="username && collapse"
         offset-y
       >
         <template v-slot:activator="{ on: menu }">
@@ -195,8 +198,6 @@ export default {
   data: () => ({
     drawer: false,
     mini: false,
-    uuser: '',
-    text: '',
     collapse: true,
     drawer2: false,
     profileItems: [
@@ -213,12 +214,16 @@ export default {
       // session settings
       numInbox: 'inbox/inboxItems'
     }),
+    keymap () {
+      return {
+        'shift+space': this.toggle
+      }
+    },
     isAuth () {
       return this.$store.getters.isAuthenticated
     },
-    user () {
-      const name = this.uuser
-      return `${name.charAt(0).toUpperCase()}${name.slice(1)}`
+    username () {
+      return `${this.$store.getters['user2/username']}`
     }
   },
 
@@ -234,20 +239,15 @@ export default {
     logout () {
       this.$store.dispatch('authentication/logout')
     },
-    toProfile () {
-      this.$router.push({ path: '/profile' })
-    },
     toInbox () {
       this.$router.push({ path: '/inbox' })
     },
     navigate (path) {
       this.$router.push({ path: path })
+    },
+    toggle () {
+      this.drawer = !this.drawer
     }
-  },
-
-  created () {
-    this.uuser = this.$store.getters['user2/username']
-    this.text = this.uuser
   }
 }
 </script>

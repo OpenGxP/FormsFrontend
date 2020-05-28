@@ -1,14 +1,16 @@
-FROM node:13.10-alpine
-# create folder for build files
+FROM nginx:1.18
+# remove default config
+RUN rm /etc/nginx/nginx.conf
+
+# copy config
+COPY nginx.conf /etc/nginx/nginx.conf
+
+# create dir for app data
 RUN mkdir -p /data/app
-WORKDIR /data/app
-COPY . /data/app/
-# make node user owner of data
-RUN chown -R node:node /data/app
-USER node
-# expose port 8080
-EXPOSE 8080
-# install and run
-RUN npm install
-# CMD
-CMD ["npm", "run", "serve"]
+
+# copy app data
+COPY dist /data/app/
+COPY docker-entrypoint.sh /data/app/
+
+ENTRYPOINT ["/data/app/docker-entrypoint.sh"]
+EXPOSE 80

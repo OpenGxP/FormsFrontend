@@ -9,41 +9,28 @@
       <!--activator-->
       <template v-slot:activator="{ on }">
         <v-btn
-          color="primary"
+          :color="getColor"
           dark
           v-on="on"
         >Form Designer</v-btn>
       </template>
 
       <!--content-->
-      <v-card>
-        <v-toolbar color="primary">
-          <v-toolbar-title>Form Builder</v-toolbar-title>
-          <v-spacer></v-spacer>
-          <v-toolbar-items>
-            <v-btn icon>
-              <v-icon>save</v-icon>
-            </v-btn>
-            <v-btn
-              icon
-              @click="dialog = false"
-            >
-              <v-icon>close</v-icon>
-            </v-btn>
-          </v-toolbar-items>
-        </v-toolbar>
-        <app-section
-          :xx="internalModel"
-          :meta="meta1"
-          @save="save($event)"
-        ></app-section>
-      </v-card>
+      <app-section
+        :xx="internalModel"
+        :meta="meta1"
+        :error="error"
+        :error-msgs="errorMsgs"
+        @save="save($event)"
+        @close="close()"
+      ></app-section>
+
     </v-dialog>
   </v-row>
 </template>
 
 <script>
-// import { payloadSection, payloadText, payloadBool, toInternal } from '@/helpers/dev'
+import _ from 'lodash'
 import { toInternal } from '@/helpers/dev'
 import appSection from '@/components/section'
 
@@ -54,6 +41,13 @@ export default {
     },
     xx: {
       type: Object
+    },
+    error: {
+      type: Boolean,
+      default: false
+    },
+    errorMsgs: {
+      type: [Array, Object]
     }
   },
 
@@ -72,14 +66,21 @@ export default {
     internalModel () {
       // return toInternal(payloadSection, payloadText, payloadBool)
       return toInternal(this.xx['sections'], this.xx['fields_text'], this.xx['fields_bool'])
+    },
+    getColor () {
+      return _.isEmpty(this.errorMsgs) ? 'primary' : 'error'
     }
   },
 
   methods: {
     save (data) {
       this.$emit('save', data)
+    },
+    close () {
+      this.dialog = false
     }
   },
+
   components: {
     appSection
   },

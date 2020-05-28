@@ -3,9 +3,8 @@
     <v-tabs
       v-model="active"
       dark
-      background-color="primary"
-      color="scondary"
-      slider-color="secondary"
+      background-color="secondary"
+      color="primary"
     >
       <v-tab
         v-for="(tab, index) in tabs"

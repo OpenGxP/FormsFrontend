@@ -10,7 +10,11 @@
     :top="options.y === 'top'"
     :vertical="options.mode === 'vertical'"
   >
-    {{ options.message }}
+    <p
+      v-for="(msg, index) in options.message"
+      :key="index"
+      v-text="msg"
+    />
     <v-btn
       text
       @click="hide()"
@@ -55,5 +59,4 @@ export default {
 </script>
 
 <style>
-
 </style>

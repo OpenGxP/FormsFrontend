@@ -2,9 +2,9 @@
   <v-select
     ref="test"
     v-model="value"
-    dense
     :items="items"
     :label="label"
+    error-count="10"
     multiple
     @input="sync"
   >

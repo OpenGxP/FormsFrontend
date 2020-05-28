@@ -21,13 +21,18 @@
                     md4
                     class="px-2"
                   >
+                    <!-- validation-field="step" -->
                     <!-- field step -->
-                    <v-text-field
+                    <app-text-field
                       v-model="step.step"
                       :label="meta.step.verbose_name"
-                      :disabled="!meta.step.editable || !editable || isReferenced(step.step)"
+                      :editable="meta.step.editable && editable && !used.includes(step.step)"
                       :hint="meta.step.help_text"
-                      @blur="$v.step.$touch()"
+                      :required="meta.step.required"
+                      :counter="meta.step.max_length"
+                      :maxlength="meta.step.max_length"
+                      :errormsgs="test(step.sequence, 'step')"
+                      :success="step.step !== '' && test2(step.sequence, 'step')"
                     />
                   </v-flex>
 
@@ -38,12 +43,16 @@
                     class="px-2"
                   >
                     <!-- field role -->
-                    <v-select
+                    <app-select
                       v-model="step.role"
                       :items="meta.role.lookup.data"
                       :label="meta.role.verbose_name"
-                      :disabled="!meta.role.editable || !editable"
+                      :editable="meta.role.editable && editable"
                       :hint="meta.role.help_text"
+                      :required="meta.step.required"
+                      :errormsgs="test(step.sequence, 'role')"
+                      :success="step.role !== '' && test2(step.sequence, 'role')"
+                      @blur="handleChange"
                     />
                   </v-flex>
 
@@ -54,14 +63,16 @@
                     class="px-2"
                   >
                     <!-- field predecessors -->
-                    <v-select
+                    <app-select
                       v-if="step.sequence !== 0"
                       v-model="step.predecessors"
                       :items="predecessors.filter(ele => ele !== step.step)"
                       :label="meta.predecessors.verbose_name"
                       multiple
-                      :disabled="step.sequence === 0 || !meta.predecessors.editable || !editable || !step.step"
+                      :required="meta.predecessors.required"
+                      :editable="step.sequence !== 0 && meta.predecessors.editable && editable && !!step.step"
                       :hint="meta.predecessors.help_text"
+                      @blur="handleChange"
                     />
                   </v-flex>
 
@@ -72,31 +83,20 @@
                     class="px-2"
                   >
                     <!-- field text -->
-                    <v-textarea
+                    <app-textarea
                       v-model="step.text"
                       :label="meta.text.verbose_name"
-                      auto-grow
-                      clearable
-                      rows="1"
+                      :editable="meta.text.editable && editable"
                       :disabled="!meta.text.editable || !editable"
                       :hint="meta.text.help_text"
+                      :required="meta.text.required"
+                      :counter="meta.text.max_length"
+                      :maxlength="meta.text.max_length"
+                      :errormsgs="test(step.sequence, 'text')"
+                      :success="step.text !== '' && test2(step.sequence, 'text')"
+                      @blur="handleChange"
                     />
                   </v-flex>
-
-                  <!-- field electronic signature -->
-                  <!--
-                  <v-flex
-                    xs12
-                    sm12
-                    md3
-                    class="px-2"
-                  >
-                    <v-switch
-                      v-model="step.electronicSignature"
-                      label="Electronic Signature"
-                    ></v-switch>
-                  </v-flex>
-                  -->
 
                   <v-btn
                     v-if="step.sequence !== 0 && editable"
@@ -107,7 +107,7 @@
                     right
                     color="pink"
                     small
-                    @click="remove(step.sequence)"
+                    @click="remove(step.sequence, step.step)"
                   >
                     <v-icon>remove</v-icon>
                   </v-btn>
@@ -120,6 +120,7 @@
 
       <v-btn
         v-if="editable"
+        :disabled="emptyStep"
         icon
         @click="add"
       >
@@ -130,8 +131,10 @@
 </template>
 
 <script>
-import { required } from 'vuelidate/lib/validators'
 import _ from 'lodash'
+import appTextField from '@/components/inputs/AppTextField'
+import appTextarea from '@/components/inputs/AppTextarea'
+import appSelect from '@/components/inputs/AppSelect'
 
 export default {
   props: {
@@ -147,7 +150,24 @@ export default {
     editable: {
       type: Boolean,
       default: false
+    },
+    error: {
+      type: Boolean,
+      default: false
+    },
+    errorMsgs: {
+      type: [Array, Object]
+    },
+    active: {
+      type: Boolean,
+      default: false
     }
+  },
+
+  components: {
+    appTextField,
+    appTextarea,
+    appSelect
   },
 
   data () {
@@ -160,21 +180,15 @@ export default {
           predecessors: [],
           text: '',
           sequence: 0
-          // electronicSignature: false
         }
-      ]
+      ],
+      successMsgs: []
     }
   },
 
   computed: {
     predecessors () {
-      return this.steps.map(x => x.step)
-    },
-    stepErrors () {
-      const errors = []
-      if (!this.$v.step.$dirty) return errors
-      !this.$v.step.required && errors.push('Item is required')
-      return errors
+      return this.steps.filter(step => step.step !== '' && step.step !== undefined).map(step => step.step)
     },
     vertices () {
       return this.steps.map(x => x.step)
@@ -187,12 +201,12 @@ export default {
         }
       }
       return _edges
-    }
-  },
-
-  validations: {
-    step: {
-      required
+    },
+    emptyStep () {
+      return this.steps.map(x => x.step).includes('')
+    },
+    used (step) {
+      return this.steps.map(step => step.predecessors).flat()
     }
   },
 
@@ -209,36 +223,54 @@ export default {
       },
       immediate: true,
       depp: true
+    },
+    active: {
+      handler (val) {
+        if (!val) {
+          // reset component data when not active
+          this.steps = _.cloneDeep(this.defaultSteps)
+          this.successMsgs = []
+        }
+      },
+      immediate: true
+    },
+    errorMsgs: {
+      handler (val) {
+        // return snapshot of successful fields
+        // case one, multiple or no errors
+        if (!Array.isArray(val) && this.error) this.getSuccessMsgs()
+        // case overall error
+        // else this.getSuccessMsgs()
+      }
+    },
+    steps: {
+      handler (val) {
+        this.handleChange()
+      }
     }
   },
 
   methods: {
-    // TODO: Build validation
     add () {
       // check if there is an empty step field
-      if (!this.steps.map(x => x.step).includes('')) {
+      if (!this.emptyStep) {
         this.steps.push({
           step: '',
           role: '',
           predecessors: [],
           text: '',
           sequence: Math.max.apply(Math, this.steps.map(step => step.sequence)) + 1
-          // electronicSignature: false
         })
       }
     },
-    remove (index) {
-      if (this.steps[index]['step']) {
-        const kill = this.steps[index]['step']
-        for (let ele of this.steps) {
-          if (ele.predecessors.includes(kill)) {
-            let index = this.steps.indexOf(ele)
-            this.steps[index].predecessors = this.steps[index].predecessors.filter(item => item !== kill)
-          }
-        }
-      }
+    remove (index, name) {
       // remove step
       this.steps = _.reject(this.steps, step => step.sequence === index)
+      // remove predecessors and adapt sequence
+      for (let step of this.steps) {
+        if (step.predecessors.includes(name)) step.predecessors = step.predecessors.filter(item => item !== name)
+        if (step.sequence > index) step.sequence -= 1
+      }
     },
     isReferenced (val) {
       // checks if step is referenceed
@@ -252,18 +284,49 @@ export default {
       // checks if step is referenceed
       // returns boolean
       for (let step of this.steps) {
-        if (step.step === val) return true
+        if (step.step === val) return { error: false, msg: [] }
       }
-      return false
-    },
-    submitStep () {
-      this.$v.touch()
+      return { error: true, msg: ['Step not unique'] }
     },
     handleChange (e) {
       this.$emit('input', this.steps)
     },
     reset () {
       this.steps = _.cloneDeep(this.defaultSteps)
+    },
+    getSuccessMsgs () {
+      this.successMsgs = []
+      // iterate over steps
+      for (let step of this.steps) {
+        // iterate attributes of step
+        for (let key of Object.keys(step)) {
+          try {
+            if (!this.errorMsgs[step.sequence][key] && key !== 'sequence' && step[key].length !== 0) {
+              this.successMsgs.push({ seq: step.sequence, field: key })
+            }
+          } catch {
+            if (key !== 'sequence' && !step[key].length !== 0) this.successMsgs.push({ seq: step.sequence, field: key })
+          }
+        }
+      }
+    },
+    test (sequence, field) {
+      try {
+        return this.errorMsgs[sequence][field]
+      } catch {
+        return []
+      }
+    },
+    test2 (sequence, field) {
+      // returns true if field of sequence is not in err msg
+      try {
+        for (let entry of this.successMsgs) {
+          if (entry.seq === sequence && entry.field === field) return true
+        }
+        return false
+      } catch {
+        return false
+      }
     }
   }
 }

@@ -54,11 +54,13 @@ export default {
         // 1
         for (let [key2, value2] of Object.entries(value.subjects)) {
           // 2
-          flatList.push({
-            title: value2.title,
-            url: `/api/${key}/${key2}`,
-            parent: value.title
-          })
+          if (this.$can('all', 'global') || this.$can('read', `${key2}`)) {
+            flatList.push({
+              title: value2.title,
+              url: `/api/${key}/${key2}`,
+              parent: value.title
+            })
+          }
         }
       }
       return flatList

@@ -54,7 +54,7 @@ export function toExternal (paramSections) {
     sections.push({
       section: section.sectionName,
       role: section.sectionRole,
-      predecessors: section.sectionPredecessor,
+      predecessors: section.sectionPredecessors,
       sequence: section.sectionSequence,
       confirmation: section.sectionConfirmationType
     })
@@ -100,7 +100,7 @@ export function toInternal (sections, fieldsText, fieldsBool) {
       {
         sectionName: section.section,
         sectionRole: section.role,
-        sectionPredecessor: section.predecessors,
+        sectionPredecessors: section.predecessors,
         sectionSequence: section.sequence,
         sectionConfirmationType: section.confirmation,
         sectionFields: []
@@ -109,7 +109,7 @@ export function toInternal (sections, fieldsText, fieldsBool) {
   }
   // text fields
   for (const field of fieldsText) {
-    dataModell.filter(section => section.sectionName === field.section)[0].sectionFields.push(
+    dataModell.filter(section => section.sectionSequence === field.section)[0].sectionFields.push(
       {
         fieldType: 'Text',
         fieldName: field.field,
@@ -122,7 +122,7 @@ export function toInternal (sections, fieldsText, fieldsBool) {
   }
   // bool fields
   for (const field of fieldsBool) {
-    dataModell.filter(section => section.sectionName === field.section)[0].sectionFields.push(
+    dataModell.filter(section => section.sectionSequence === field.section)[0].sectionFields.push(
       {
         fieldType: 'Boolean',
         fieldName: field.field,

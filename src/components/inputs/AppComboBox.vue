@@ -10,10 +10,13 @@
     :readonly="!editable"
     :multiple="multiple"
     :autofocus="autofocus"
+    :success="success"
+    :append-outer-icon="success ? 'check_circle_outline' : ''"
     persistent-hint
     small-chips
     :error="error"
     :error-messages="errormsgs"
+    error-count="10"
     @input="handleInput"
   >
     <!-- slot: label -->
@@ -51,6 +54,11 @@ export default {
       default: false,
       required: false,
       type: Boolean
+    },
+    success: {
+      type: Boolean,
+      default: false,
+      required: false
     }
   },
 

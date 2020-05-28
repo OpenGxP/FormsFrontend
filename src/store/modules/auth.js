@@ -1,6 +1,7 @@
 import axios from 'axios'
 import router from '@/router'
 import ability from '@/ability'
+import vuetify from '@/plugins/vuetify'
 import { USER_REQUEST } from '../actions/user'
 // import { GET_INBOX } from '../actions/session'
 import authentication from '@/services/api/authentication'
@@ -58,11 +59,13 @@ const actions = {
       .then(resp => {
         commit('logout')
         commit('setToken', '')
+        vuetify.framework.theme.dark = true
         router.push('/login')
       })
   },
   lo: ({ commit }) => {
     commit('logout')
+    vuetify.framework.theme.dark = true
     router.push('/login')
   },
   getToken: ({ commit }) => {
@@ -84,6 +87,7 @@ const actions = {
     dispatch('initialize')
     dispatch('get')
     dispatch('initUser')
+    dispatch('user2/getProfileData')
     dispatch('session/getInbox')
     commit('login')
     router.push('/')

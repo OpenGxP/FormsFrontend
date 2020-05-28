@@ -33,8 +33,8 @@
                 name="login"
                 label="Login"
                 type="text"
-                :error="err"
-                :error-messages="errMsgs"
+                :error="('username' in errMsgs)"
+                :error-messages="errMsgs.username"
                 @keyup.enter="login()"
               />
               <v-text-field
@@ -46,8 +46,8 @@
                 :type="show ? 'text' : 'password'"
                 name="password"
                 label="Password"
-                :error="err"
-                :error-messages="errMsgs"
+                :error="('password' in errMsgs)"
+                :error-messages="errMsgs.password"
                 @click:append="show = !show"
                 @keyup.enter="login()"
               />
@@ -80,7 +80,6 @@ export default {
   name: 'Login',
 
   data: () => ({
-    err: false,
     errMsgs: [],
     color: 'primary',
     username: '',
@@ -109,7 +108,6 @@ export default {
           if (err.response.status === 403) {
             this.login()
           } else {
-            this.err = true
             this.errMsgs = err.response.data
           }
         })

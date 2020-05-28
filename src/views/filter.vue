@@ -1,12 +1,12 @@
 <template>
-  <div>
+  <v-container>
     <div>{{ quick }}</div>
-    <quick-filter v-model="quick"></quick-filter>
-  </div>
+    <app-execution></app-execution>
+  </v-container>
 </template>
 
 <script>
-import quickFilter from '@/components/AppQuickfilter'
+import appExecution from '@/components/execution'
 
 export default {
   data: () => ({
@@ -14,7 +14,7 @@ export default {
   }),
 
   components: {
-    quickFilter
+    appExecution
   }
 }
 </script>

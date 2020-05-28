@@ -1,7 +1,6 @@
 <template>
   <v-text-field
     v-model="val"
-    dense
     :hint="cHint"
     :required="required"
     :disabled="!editable"
@@ -10,7 +9,10 @@
     :append-icon="show ? 'visibility' : 'visibility_off'"
     :error="error"
     :error-messages="errormsgs"
+    :success="success"
+    :append-outer-icon="success ? 'check_circle_outline' : ''"
     clearable
+    error-count="10"
     @input="handleInput"
     @click:append="show = !show"
   >
@@ -30,6 +32,11 @@ export default {
   props: {
     value: {
       required: true
+    },
+    success: {
+      type: Boolean,
+      default: false,
+      required: false
     }
   },
 

@@ -48,6 +48,11 @@ export default {
     options: {
       type: Array,
       required: false
+    },
+    fieldType: {
+      type: String,
+      required: false,
+      default: 'Text'
     }
   },
 

@@ -16,6 +16,7 @@
 import appDashboard from '@/components/TheDashboard'
 
 export default {
+
   components: {
     appDashboard
   }

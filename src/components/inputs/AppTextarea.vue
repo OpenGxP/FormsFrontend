@@ -1,5 +1,5 @@
 <template>
-  <v-text-field
+  <v-textarea
     v-model="val"
     :hint="cHint"
     :required="required"
@@ -11,8 +11,10 @@
     :error-messages="err.msgs"
     :success="success"
     :append-outer-icon="success ? 'check_circle_outline' : ''"
+    auto-grow
     clearable
     error-count="10"
+    rows="1"
     @input="handleInput"
     @keydown.enter="save()"
     @blur="validate()"
@@ -25,7 +27,7 @@
         >*</span>
       </div>
     </template>
-  </v-text-field>
+  </v-textarea>
 </template>
 
 <script>
@@ -77,12 +79,8 @@ export default {
     error (val) {
       this.err.error = val
     },
-    errormsgs: {
-      handler (val) {
-        this.err.msgs = val
-      },
-      immediate: true,
-      dep: true
+    errormsgs (val) {
+      this.err.msgs = val
     }
   },
 

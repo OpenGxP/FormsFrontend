@@ -1,16 +1,8 @@
 <template>
-  <!-- tabindex to make div focusable -->
-  <div
-    ref="main"
-    tabindex="0"
-    v-hotkey.stop="keymap"
-  >
-    <!-- @keyup.67="newItem()" @keyup.69="editItem()" @keyup.86="viewItem()" -->
+  <div v-hotkey.stop="keymap">
     <!-- toolbar -->
     <v-toolbar
-      dark
       color="primary"
-      fixed
     >
       <!-- Data table interaction -->
       <v-tooltip bottom>
@@ -32,13 +24,13 @@
       />
       <!-- view -->
       <v-tooltip
-        v-if="config['post'] && ($can('all', 'global') || $can('read', vlink))"
+        v-if="$can('all', 'global') || $can('read', vlink)"
         bottom
       >
         <template v-slot:activator="{ on }">
           <v-btn
             icon
-            :disabled="activeSelection"
+            :disabled="!activeSelection"
             v-on="on"
             @click="viewItem()"
           >
@@ -71,7 +63,7 @@
         <template v-slot:activator="{ on }">
           <v-btn
             icon
-            :disabled="activeSelection || allowedSelection"
+            :disabled="!(activeSelection && allowedSelection)"
             v-on="on"
             @click="editItem()"
           >
@@ -79,6 +71,23 @@
           </v-btn>
         </template>
         <span>Edit</span>
+      </v-tooltip>
+      <!-- copy -->
+      <v-tooltip
+        v-if="config['post'] && ($can('all', 'global') || $can('add', vlink))"
+        bottom
+      >
+        <template v-slot:activator="{ on }">
+          <v-btn
+            icon
+            :disabled="!activeSelection"
+            v-on="on"
+            @click="copyItem()"
+          >
+            <v-icon>file_copy</v-icon>
+          </v-btn>
+        </template>
+        <span>Copy</span>
       </v-tooltip>
       <!-- version -->
       <v-tooltip
@@ -88,9 +97,9 @@
         <template v-slot:activator="{ on }">
           <v-btn
             icon
-            :disabled="activeSelection || allowedNewVersion"
+            :disabled="!(activeSelection && allowedNewVersion)"
             v-on="on"
-            @click="newVersion()"
+            @click="initiateNewVersion()"
           >
             <v-icon>plus_one</v-icon>
           </v-btn>
@@ -105,9 +114,9 @@
         <template v-slot:activator="{ on }">
           <v-btn
             icon
-            :disabled="activeSelection || allowedSelection"
+            :disabled="!(activeSelection && allowedSelection)"
             v-on="on"
-            @click="deleteItem()"
+            @click="initiateDelete()"
           >
             <v-icon>delete</v-icon>
           </v-btn>
@@ -130,6 +139,22 @@
         </template>
         <span>Log</span>
       </v-tooltip>
+      <!-- ldap sync -->
+      <v-tooltip
+        v-if="$can('all', 'global') && vlink === 'roles'"
+        bottom
+      >
+        <template v-slot:activator="{ on }">
+          <v-btn
+            icon
+            v-on="on"
+            @click="syncLdapGroups()"
+          >
+            <v-icon>sync</v-icon>
+          </v-btn>
+        </template>
+        <span>Sync with ldap</span>
+      </v-tooltip>
 
       <v-spacer />
 
@@ -139,52 +164,75 @@
           v-if="$can('all', 'global') || $can('circulation', vlink)"
           text
           :disabled="allowed('circulation')"
-          @click="changeStatus('circulation')"
+          @click="initiateChangeStatus('circulation')"
         >circulation</v-btn>
         <v-btn
           v-if="$can('all', 'global') || $can('productive', vlink)"
           text
           :disabled="allowed('approve')"
-          @click="changeStatus('productive')"
+          @click="initiateChangeStatus('productive')"
         >approve</v-btn>
         <v-btn
           v-if="$can('all', 'global') || $can('reject', vlink)"
           text
           :disabled="allowed('reject')"
-          @click="changeStatus('draft')"
+          @click="initiateChangeStatus('draft')"
         >reject</v-btn>
         <v-btn
           v-if="$can('all', 'global') || $can('block', vlink)"
           text
           :disabled="allowed('block')"
-          @click="changeStatus('blocked')"
+          @click="initiateChangeStatus('blocked')"
         >block</v-btn>
         <v-btn
           v-if="$can('all', 'global') || $can('inactivate', vlink)"
           text
           :disabled="allowed('inactivate')"
-          @click="changeStatus('inactive')"
+          @click="initiateChangeStatus('inactive')"
         >inactivate</v-btn>
         <v-btn
           v-if="$can('all', 'global') || $can('archive', vlink)"
           text
           :disabled="allowed('archive')"
-          @click="changeStatus('archived')"
+          @click="initiateChangeStatus('archived')"
         >archive</v-btn>
       </template>
+
+      <!-- Run Time Data -->
+      <template v-if="config['status'] === 'rtd'">
+        <v-btn
+          v-if="$can('all', 'global') || $can('start', vlink)"
+          text
+          :disabled="allowedRtd('started')"
+          @click="initiateChangeStatus('started')"
+        >start</v-btn>
+        <v-btn
+          v-if="$can('all', 'global') || $can('complete', vlink)"
+          text
+          :disabled="allowedRtd('complete')"
+          @click="initiateChangeStatus('complete')"
+        >complete</v-btn>
+        <v-btn
+          v-if="$can('all', 'global') || $can('cancel', vlink)"
+          text
+          :disabled="allowedRtd('canceled')"
+          @click="initiateChangeStatus('canceled')"
+        >cancel</v-btn>
+      </template>
+
       <!-- inbox-->
       <template v-if="vlink === 'inbox'">
         <v-btn
           text
-          :disabled="activeSelection"
-          @click="changeStatus('approve')"
+          :disabled="!activeSelection"
+          @click="changeStatus({}, 'productive')"
         >
           <v-icon left>done</v-icon>approve
         </v-btn>
         <v-btn
           text
-          :disabled="activeSelection"
-          @click="changeStatus('reject')"
+          :disabled="!activeSelection"
+          @click="changeStatus({}, 'draft')"
         >
           <v-icon left>clear</v-icon>reject
         </v-btn>
@@ -259,7 +307,7 @@
               class="mx-2"
               label="Dense"
               :input-value="dense"
-              @change="tableSettings({ dense: !dense })"
+              @change="dense = !dense"
             />
             <v-btn
               class="mx-2"
@@ -290,30 +338,30 @@
         <v-data-table
           v-model="selected"
           :headers="selectedHeaders"
-          fixed-header
           hide-default-header
           :items="items"
           :search="search"
           :dense="dense"
           item-key="unique"
           :show-select="tableSelect"
-          :single-select="tableSelect"
+          :single-select="false"
           :multi-sort="false"
           class="elevation-1 tbl"
           :options.sync="options"
+          :loading="isLoading"
+          loading-text="Loading... Please wait"
           :server-items-length="recordCount"
-          :loading="loading"
           :footer-props="{
-            itemsPerPageOptions: [5, 10, 15, 25],
+            itemsPerPageOptions: [5, 10, 15, 25, 50, 100],
             showFirstLastPage: true,
             firstIcon: 'first_page',
             lastIcon: 'last_page',
             prevIcon: 'chevron_left',
             nextIcon: 'chevron_right'
           }"
-          @click:row="rowSingleSelect"
-          @dblclick:row="editItem()"
+          @click:row="rowSelect"
         >
+          <!-- @click:row="config.status ? rowSelect : rowSingleSelect" -->
 
           <!--<template
             v-slot:header="{ props: {headers} }"
@@ -411,6 +459,13 @@
             />
           </template>
 
+          <template v-slot:item.external="{ item }">
+            <v-icon
+              :color="item.ldap ? 'green' : 'red'"
+              v-text="item.ldap ? 'done' : 'clear'"
+            />
+          </template>
+
           <template v-slot:no-results>
             <v-alert
               color="error"
@@ -431,8 +486,9 @@
           :dialog="sigDialog.dialog"
           :sig="sig.sig"
           :com="sig.com"
+          :error="errorMsgs"
           @close-dialog="sigDialog.dialog = $event"
-          @get-signature="save3($event)"
+          @get-signature="addSignature($event)"
         />
 
         <!-- dialog -->
@@ -440,6 +496,7 @@
           v-model="dialog"
           max-width="800px"
           persistent
+          scrollable
         >
           <!-- header -->
           <v-card>
@@ -453,13 +510,14 @@
                 <v-icon>cancel</v-icon>
               </v-btn>
             </v-card-title>
+            <v-divider />
             <!-- body -->
-            <v-card-text>
+            <v-card-text style="max-height: 800px;">
               <v-container grid-list-md>
                 <v-layout wrap>
                   <!-- Fields -->
                   <v-flex
-                    v-for="(field, index) in formFields"
+                    v-for="(field, index) in postFields"
                     :key="field.name"
                     xs12
                     sm12
@@ -471,6 +529,9 @@
                       v-model="editedItem[field.name]"
                       :label="field.verbose_name"
                       :disabled="view"
+                      :error="errorMsgs[field.name] ? true : false"
+                      :errormsgs="errorMsgs[field.name] ? errorMsgs[field.name] : []"
+                      error-count="10"
                     />
                     <!-- DateTime -->
                     <app-date-time-picker
@@ -493,6 +554,9 @@
                       :meta="field"
                       :data="editedItem[field.name]"
                       :editable="!view"
+                      :error="errorMsgs[field.name] ? true : false"
+                      :error-msgs="errorMsgs[field.name] ? errorMsgs[field.name] : {}"
+                      :active="dialog"
                       @input="editedItem[field.name] = $event"
                     />
                     <!-- Form designer -->
@@ -500,6 +564,8 @@
                     <app-sections
                       v-else-if="field.name === 'sections'"
                       :xx="editSection"
+                      :error="errorMsgs[field.name] ? true : false"
+                      :error-msgs="errorSection ? errorSection : {}"
                       @save="newSection($event)"
                     />
                     <!-- lookups -->
@@ -517,6 +583,7 @@
                         :autofocus="index === 0"
                         :error="errorMsgs[field.name] ? true : false"
                         :errormsgs="errorMsgs[field.name] ? errorMsgs[field.name] : []"
+                        :success="successMsgs.includes(field.name) && editedItem[field.name] !== ''"
                       />
                       <!-- select -->
                       <app-combo-box
@@ -531,6 +598,7 @@
                         :autofocus="index === 0"
                         :error="errorMsgs[field.name] ? true : false"
                         :errormsgs="errorMsgs[field.name] ? errorMsgs[field.name] : []"
+                        :success="successMsgs.includes(field.name) && editedItem[field.name] !== ''"
                       />
                     </template>
                     <!-- password -->
@@ -542,11 +610,13 @@
                       :required="field.required"
                       :editable="view ? false : editedIndex !== -1 ? field.editable : true"
                       :autofocus="index === 0"
+                      :counter="field.max_length"
+                      :maxlength="field.max_length"
                       :error="errorMsgs[field.name] ? true : false"
+                      :success="successMsgs.includes(field.name) && editedItem[field.name] !== ''"
                       :errormsgs="errorMsgs[field.name] ? errorMsgs[field.name] : []"
                     />
                     <!-- text -->
-                    <!-- TODO: support for @keyup.enter="save" -->
                     <app-text-field
                       v-else
                       v-model="editedItem[field.name]"
@@ -555,15 +625,18 @@
                       :required="field.required"
                       :editable="view ? false : editedIndex !== -1 ? field.editable : true"
                       :autofocus="index === 0"
+                      :counter="field.max_length"
+                      :maxlength="field.max_length"
                       :error="errorMsgs[field.name] ? true : false"
                       :errormsgs="errorMsgs[field.name] ? errorMsgs[field.name] : []"
-                      @enter-event="save()"
+                      :success="successMsgs.includes(field.name) && editedItem[field.name] !== ''"
+                      @enter-event="initiateSave()"
                     />
                   </v-flex>
                 </v-layout>
               </v-container>
             </v-card-text>
-
+            <v-divider />
             <!-- footer -->
             <v-card-actions>
               <v-spacer />
@@ -576,7 +649,7 @@
                 color="blue darken-1"
                 text
                 :disabled="view"
-                @click="save"
+                @click="initiateSave()"
               >Save</v-btn>
             </v-card-actions>
           </v-card>
@@ -588,13 +661,14 @@
 
 <script>
 import axios from 'axios'
+import _ from 'lodash'
 import AppDateTimePicker from '@/components/inputs/AppDateTimePicker'
 import AppComboBox from '@/components/inputs/AppComboBox'
 import AppTextField from '@/components/inputs/AppTextField'
 import AppSelect from '@/components/inputs/AppSelect'
 import AppPasswordField from '@/components/inputs/AppPasswordField'
 import AppSections from '@/components/SectionWrapper'
-import { mapGetters, mapActions } from 'vuex'
+import { mapActions } from 'vuex'
 
 import PermissionAllocation from '@/components/inputs/PermissionAllocation'
 import AppWorkflowDesigner from '@/components/inputs/AppWorkflowDesigner'
@@ -631,6 +705,9 @@ export default {
 
   data () {
     return {
+      sigErrors: {},
+      search: null,
+      dense: false,
       activeFilter: false,
       sigDialog: {
         dialog: false,
@@ -639,12 +716,11 @@ export default {
       newurl: '',
       view: false,
       mode: null,
+      isLoading: false,
       loaded: false,
-      search: '',
       headers: [],
       items: [],
       selected: [],
-      // dense: false,
       sig: {
         sig: 'logging',
         com: 'none'
@@ -659,9 +735,10 @@ export default {
       editedItem: {},
       defaultItem: {},
       meta: {},
+      entityLevel: {},
       postConfig: {},
-      veditable: false,
       errorMsgs: {},
+      successMsgs: [],
       allowedTransistions: {
         draft: ['circulation'],
         circulation: ['reject', 'approve'],
@@ -670,6 +747,12 @@ export default {
         inactive: ['blocked'],
         archived: []
       },
+      allowedRtdTransistions: {
+        created: ['started'],
+        started: ['complete', 'canceled'],
+        complete: [],
+        canceled: []
+      },
       recordCount: 0,
       options: {
         page: 1,
@@ -677,22 +760,25 @@ export default {
         sortBy: [],
         sortDesc: []
       },
-      loading: false,
       modus: '',
       binaryArrayHeaders: []
     }
   },
 
   computed: {
-    ...mapGetters({
-      // table session settings
-      dense: 'session/dense'
-    }),
     editSection () {
       return Object.keys(this.editedItem)
         .filter(key => ['sections', 'fields_text', 'fields_bool'].includes(key))
         .reduce((obj, key) => {
           obj[key] = this.editedItem[key]
+          return obj
+        }, {})
+    },
+    errorSection () {
+      return Object.keys(this.errorMsgs)
+        .filter(key => ['sections', 'fields_text', 'fields_bool'].includes(key))
+        .reduce((obj, key) => {
+          obj[key] = this.errorMsgs[key]
           return obj
         }, {})
     },
@@ -724,31 +810,33 @@ export default {
     formTitle () {
       return this.editedIndex === -1 ? 'New Item' : 'Edit Item'
     },
-    roles () {
-      return this.$store.getters.validRoles.map(item => item.role)
-    },
     activeSelection () {
-      if (this.selected.length !== 1) {
+      if (this.selected.length >= 1) {
         return true
       } else {
         return false
       }
     },
     allowedSelection () {
-      if (!this.config['version']) return false
-      if (this.selected[0]['status'] === 'draft') return false
-      return true
+      // returns true if slected item is not version managed OR in status draft
+      if (!this.config['version'] && this.config['status'] !== 'rtd') return true
+      if (this.selected.length) if (!this.selected.filter(item => item.status !== 'draft').length) return true
+      if (this.selected.length) if (!this.selected.filter(item => item.status !== 'created').length) return true
+      return false
     },
     allowedNewVersion () {
       if (!this.config['version']) return false
-      if (this.selected[0]['status'] !== 'draft') return false
+      if (this.selected.length) if (this.selected.filter(item => item.status === 'draft').length) return false
       return true
     },
     keymap () {
+      // on keyup to prevent typing c in case of autofocus
       return {
         'c': {
-          // to prevent typing c in case of autofocus
           keyup: this.newItem
+        },
+        'd': {
+          keyup: this.initiateDelete
         },
         'e': {
           keyup: this.editItem
@@ -759,13 +847,42 @@ export default {
       }
     },
     dialogKeymap () {
+      // TODO: make this work
       return {
-        'ctrl+s': this.save
+        'ctrl+s': this.initiateSave()
       }
     },
-    filterFields () {
-      // return this.formFields.map(field => field.name)
-      return this.headers.map(field => field.value)
+    sameStatus () {
+      if (this.selected.length && this.config.status) {
+        let filtered = this.selected.filter(x => x.status !== this.selected[0].status)
+        if (filtered.length) return false
+        return true
+      }
+      return false
+    },
+    postFields () {
+      if (this.selected.length) {
+        const lookup = this.selected[0].lookup
+        if (Object.keys(this.entityLevel).includes(lookup)) {
+          const fields = _.cloneDeep(this.formFields)
+          for (let field of fields) {
+            if (field.name === 'value') {
+              field.lookup = {
+                data: this.entityLevel[lookup].data,
+                method: this.entityLevel[lookup].method,
+                multi: this.entityLevel[lookup].multi
+              }
+            }
+          }
+          return fields
+        }
+        return this.formFields
+      }
+      return this.formFields
+    },
+    isPossible (action) {
+      // returns user permision and
+      return this.config['patch'] && (this.$can('all', 'global') || this.$can('edit', this.vlink))
     }
   },
 
@@ -784,8 +901,9 @@ export default {
       val || this.close()
       if (!val) {
         this.errorMsgs = {}
+        this.successMsgs = []
         this.view = false
-        this.$refs.main.focus()
+        // this.$refs.main.focus()
       }
     },
     options: {
@@ -810,7 +928,6 @@ export default {
   },
 
   methods: {
-    ...mapActions(['INIT_MASTERDATA', 'DELETE_MASTERDATA']),
     ...mapActions({
       // snackbar
       activate: 'global/snackbar/activate',
@@ -821,7 +938,23 @@ export default {
       for (let key of Object.keys(payload)) {
         this.editedItem[key] = payload[key]
       }
+      this.initiateSave()
     },
+    // signature start
+    isSignatureNeeded (action) {
+      if (this.misc[action].sig === 'logging' & this.misc[action].com === 'none') return false
+      return true
+    },
+    getSignature (action, transition = false) {
+      !transition ? this.sig = _.cloneDeep(this.misc[action]) : this.sig = _.cloneDeep(this.misc[this.mapping(action)])
+      this.modus = action
+      if (action === 'add' || action === 'edit') {
+        this.save({}, true)
+      } else {
+        this.sigDialog.dialog = true
+      }
+    },
+    // signature end
     convert (obj, config) {
       // iterate fields
       for (let [key, value] of Object.entries(obj)) {
@@ -860,6 +993,18 @@ export default {
       } else {
         this.selected.push(e)
       }
+    },
+    syncLdapGroups () {
+      this.isLoading = true
+      this.$http.get('/admin/roles/ldap')
+        .then(resp => {
+          this.activate({ color: 'success', message: ['Sync was successful'] })
+          this.loadData()
+        })
+        .catch(err => {
+          this.activate({ color: 'error', message: err.response.data })
+        })
+        .finally(this.isLoading = false)
     },
     loadMeta () {
       // TODO:
@@ -906,11 +1051,14 @@ export default {
         this.formFields = formFields
         this.editedItem = initItem
         this.defaultItem = initItem
+        // entit
+        if ('data' in resp.data) this.entityLevel = resp.data.data
         // load actual data
         this.loadData()
       })
     },
     loadData (newFilter = false) {
+      this.isLoading = true
       // variable for ajax call
       let path = ''
       // assign parameters for sorting & pagination
@@ -987,167 +1135,175 @@ export default {
           // set laoding state
           this.loaded = true
         })
-        .catch(err => {
-          this.activate({ color: 'error', error: err.response.data })
-        })
-    },
-    inlineEditItem (item) {
-      this.editedIndex = this.items.indexOf(item)
-      this.editedItem = Object.assign({}, item)
-      this.dialog = true
+        .finally(this.isLoading = false)
     },
     editItem () {
-      // || this.selected[0].status !== 'draft'
-      if (this.selected.length === 0) {
-        this.activate({
-          color: 'error',
-          message: `There is no selected item to edit OR the selection is invalid`
-        })
-      } else {
-        let item = this.convert(this.selected[0], this.postConfig) // this.selected[0] //
+      if (this.config['patch'] && (this.$can('all', 'global') || this.$can('edit', this.vlink)) && (this.activeSelection && this.allowedSelection)) {
+        let item = this.convert(this.selected[0], this.postConfig)
         this.editedIndex = this.items.indexOf(item)
         this.editedItem = Object.assign({}, item)
         this.dialog = true
       }
     },
     viewItem () {
-      this.view = true
-      this.editItem()
+      if ((this.$can('all', 'global') || this.$can('read', this.vlink)) && this.activeSelection) {
+        this.view = true
+        let item = this.convert(this.selected[0], this.postConfig)
+        this.editedIndex = this.items.indexOf(item)
+        this.editedItem = Object.assign({}, item)
+        this.dialog = true
+      }
     },
     newItem () {
-      this.editedItem = Object.assign({}, this.defaultItem)
-      this.dialog = true
+      if (this.config['post'] && (this.$can('all', 'global') || this.$can('add', this.vlink))) {
+        this.editedItem = Object.assign({}, this.defaultItem)
+        this.dialog = true
+      }
+    },
+    copyItem () {
+      if (this.config['post'] && (this.$can('all', 'global') || this.$can('add', this.vlink))) {
+        // tmporary object to avoid copying lifecycle id etc. of existing selected record
+        const tmp = {}
+        for (let key of Object.keys(this.editedItem)) {
+          if (this.postConfig[key].lookup) {
+            tmp[key] = this.selected[0][key].split(',')
+          } else {
+            tmp[key] = this.selected[0][key]
+          }
+        }
+        this.editedItem = Object.assign({}, tmp)
+        this.dialog = true
+        this.save({}, true)
+      }
     },
     openLog () {
       // if no object is selected move to according log overview
       if (!this.selected.length) { this.$router.push({ path: `/api/${this.config.log.rel}` }) }
       // TODO: else show log entries of selected object
     },
-    changeStatus (target) {
-      if (!Object.entries(this.misc).length === 0 && this.misc.constructor === Object) {
-        if (
-          this.misc[target].com !== 'none' ||
-          this.misc[target].sig !== 'logging'
-        ) {
-          this.sig.sig = this.misc[target].sig
-          this.sig.com = this.misc[target].com
-          this.modus = target
-          this.sigDialog.dialog = true
-        } else {
-          this.modus = target
-          this.ch()
+    initiateSave () {
+      if (this.editedIndex > -1) {
+        // case edit item
+        if (this.config['patch'] && (this.$can('all', 'global') || this.$can('edit', this.vlink)) && (this.activeSelection && this.allowedSelection)) {
+          if (this.isSignatureNeeded('edit')) {
+            this.getSignature('edit')
+          } else {
+            this.save()
+          }
         }
+      } else {
+        // case add new item
+        if (this.config['post'] && (this.$can('all', 'global') || this.$can('edit', this.vlink))) {
+          if (this.isSignatureNeeded('add')) {
+            this.getSignature('add')
+          } else {
+            this.save()
+          }
+        }
+      }
+    },
+    initiateDelete () {
+      // check if delete is allowed
+      // TODO: Prüfung dass alle selected items gleichen status haben und slected != 0 ist fehlt noch
+      if (this.config['delete'] && (this.$can('all', 'global') || this.$can('delete', this.vlink)) && (this.activeSelection && this.allowedSelection)) {
+        // check if signature for action "delete" is needed
+        if (this.isSignatureNeeded('delete')) {
+          // case either signature or comment is needed
+          this.getSignature('delete')
+        } else {
+          // case neither signature nor comment is needed
+          this.delete()
+        }
+      }
+    },
+    initiateNewVersion () {
+      // check if delete is allowed
+      // TODO: Prüfung dass alle selected items gleichen status haben und slected != 0 ist fehlt noch
+      if (this.config['version'] && (this.$can('all', 'global') || this.$can('version', this.vlink))) {
+        // check if signature for action "delete" is needed
+        if (this.isSignatureNeeded('version')) {
+          // case either signature or comment is needed
+          this.getSignature('version')
+        } else {
+          // case neither signature nor comment is needed
+          this.newVersion()
+        }
+      }
+    },
+    initiateChangeStatus (target) {
+      if (this.isSignatureNeeded(this.mapping(target))) {
+        this.getSignature(target, true)
       } else {
         this.modus = target
-        this.ch()
+        this.changeStatus()
       }
     },
-    ch (sig = {}) {
-      let item = this.selected[0]
-      axios
-        .patch(
-          `${this.inpt}/${item.lifecycle_id}/${item.version}/${this.modus}`,
-          sig
-        )
-        .then(resp => {
-          // snackbar
-          this.activate({
-            color: 'success',
-            message: `Object was successfully set to status ${this.modus}`
-          })
-          this.loadData()
-          this.selected = []
-        })
-        .catch(err => {
-          // snackbar
-          this.activate({
-            color: 'error',
-            message: err.response.data.validation_errors.join('\r\n')
-          })
-        })
-      this.sigDialog.dialog = false
-    },
-    deleteItem () {
-      if (
-        this.misc.delete.com !== 'none' ||
-        this.misc.delete.sig !== 'logging'
-      ) {
-        this.sig.sig = this.misc.delete.sig
-        this.sig.com = this.misc.delete.com
-        this.modus = 'delete'
-        this.sigDialog.dialog = true
-      } else {
-        this.del()
-      }
-    },
-    del (sig = {}) {
+    delete (sig = {}) {
       let payload = {}
       if (sig) Object.assign(payload, sig)
-      const item = this.selected[0]
-      // TODO: find better solution
-      var u = ''
-      if (!this.config['version']) {
-        u = `/${this.inpt}/${item.unique}`
-      } else {
-        u = `/${this.inpt}/${item.lifecycle_id}/${item.version}`
+      for (let item of this.selected) {
+        axios({
+          method: 'delete',
+          url: !this.config['version'] ? `/${this.inpt}/${item.unique}` : `/${this.inpt}/${item.lifecycle_id}/${item.version}`,
+          data: payload,
+          withCredentials: true
+        })
+          .then(resp => {
+            this.activate({
+              color: 'success',
+              message: ['Object was successfully deleted']
+            })
+            this.loadData()
+            this.sigDialog.dialog = false
+          })
+          .catch(err => {
+            this.handleErrors(err.response.data)
+            this.sigErrors = err.response.data
+          })
       }
-      axios({
-        method: 'delete',
-        url: u,
-        data: payload,
-        withCredentials: true
-      })
-        .then(resp => {
-          this.activate({
-            color: 'success',
-            message: 'Object was successfully deleted'
+      this.selected = []
+    },
+    newVersion (sig = {}) {
+      let payload = {}
+      if (sig) Object.assign(payload, sig)
+      for (let item of this.selected) {
+        this.$http.post(`/${this.inpt}/${item.lifecycle_id}/${item.version}`)
+          .then(resp => {
+            this.loadData()
+            this.sigDialog.dialog = false
           })
-          this.loadData()
-        })
-        .catch(err => {
-          this.activate({
-            color: 'success',
-            error: err.response.data.validation_errors.join('\r\n')
+          .catch(err => {
+            this.handleErrors(err.response.data)
           })
-        })
-      this.sigDialog.dialog = false
-    },
-    load () {
-      this.loading = true
-      this.loadMeta()
-      this.loading = false
-    },
-    close () {
-      this.dialog = false
-      setTimeout(() => {
-        this.editedItem = Object.assign({}, this.defaultItem)
-        this.editedIndex = -1
-        this.selected = []
-      }, 300)
-    },
-    save () {
-      // edit
-      if (this.selected.length > 0) {
-        if (this.misc.edit.com === 'none' && this.misc.edit.sig === 'logging') {
-          this.save2()
-        } else {
-          this.sig.sig = this.misc.edit.sig
-          this.sig.com = this.misc.edit.com
-          this.modus = 'edit'
-          this.sigDialog.dialog = true
-        }
-      } else {
-        if (this.misc.add.com === 'none' && this.misc.add.sig === 'logging') {
-          this.save2()
-        } else {
-          this.sig.sig = this.misc.add.sig
-          this.sig.com = this.misc.add.com
-          this.modus = 'add'
-          this.sigDialog.dialog = true
-        }
       }
     },
-    save2 (sig = {}) {
+    changeStatus (sig = {}, secondary = null) {
+      // scondary fo special case inbox
+      for (let item of this.selected) {
+        axios
+          .patch(
+            !secondary ? this.config.version ? `${this.inpt}/${item.lifecycle_id}/${item.version}/${this.modus}` : `${this.inpt}/${item.unique}/${this.modus}` : `/md/forms/${item.lifecycle_id}/${item.version}/${secondary}`,
+            sig
+          )
+          .then(resp => {
+            // snackbar
+            this.activate({
+              color: 'success',
+              message: [`Object was successfully set to status ${this.modus}`]
+            })
+            this.loadData()
+            this.selected = []
+            this.sigDialog.dialog = false
+          })
+          .catch(err => {
+            this.handleErrors(err.response.data)
+          })
+      }
+      this.selected = []
+    },
+    save (sig = {}, validate = false) {
+      // validate
+      const context = validate ? `${this.inpt}_validate` : this.inpt
       let item = this.selected[0]
       let payload = Object.assign({}, this.editedItem)
       // if payload of signature != empty, assign sig to payload of api call
@@ -1164,108 +1320,118 @@ export default {
       }
       if (this.editedIndex > -1) {
         // edit
-        // TODO: find better solution
-        var u = ''
-        if (!this.config['version']) {
-          u = `/${this.inpt}/${item.unique}`
-        } else {
-          u = `/${this.inpt}/${item.lifecycle_id}/${item.version}`
-        }
         // edit item
+
         axios({
           method: 'patch',
-          url: u,
+          url: !this.config['version'] ? `/${context}/${item.unique}` : `/${context}/${item.lifecycle_id}/${item.version}`,
           data: payload,
           withCredentials: true
         })
           .then(resp => {
-            this.close()
-            this.loadData()
+            if (validate) {
+              // to do show success messages
+              this.sigDialog.dialog = true
+            } else {
+              this.close()
+              this.loadData()
+              this.sigDialog.dialog = false
+            }
           })
           .catch(err => {
-            if ('validation_errors' in err.response.data) {
-              this.activate({
-                color: 'error',
-                message: err.response.data.validation_errors.join('\r\n')
-              })
-            } else {
-              this.activate({
-                color: 'error',
-                message: 'Missing and / or wrong data'
-              })
-              this.errorMsgs = err.response.data
-            }
+            this.handleErrors(err.response.data, ['Missing and / or wrong data'])
+            this.successMsgs = Object.keys(this.editedItem).filter(key => this.editedItem[key]).filter(x => !Object.keys(err.response.data).includes(x))
           })
       } else {
         // new item
         axios({
           method: 'post',
-          url: `/${this.inpt}`,
+          url: `/${context}`,
           data: payload,
           withCredentials: true
         })
           .then(resp => {
-            this.close()
-            this.loadData()
-          })
-          .catch(err => {
-            if ('validation_errors' in err.response.data) {
-              this.activate({
-                color: 'error',
-                message: err.response.data.validation_errors.join('\r\n')
-              })
+            if (validate) {
+              // to do show success messages
+              this.sigDialog.dialog = true
             } else {
-              this.activate({
-                color: 'error',
-                message: 'Missing and / or wrong data'
-              })
-              this.errorMsgs = err.response.data
+              this.close()
+              this.loadData()
+              this.sigDialog.dialog = false
             }
           })
+          .catch(err => {
+            this.handleErrors(err.response.data, ['Missing and / or wrong data'])
+            this.successMsgs = Object.keys(this.editedItem).filter(key => this.editedItem[key]).filter(x => !Object.keys(err.response.data).includes(x))
+          })
       }
-      this.sigDialog.dialog = false
     },
-    save3 (sig) {
+    load () {
+      this.loadMeta()
+    },
+    close () {
+      this.dialog = false
+      setTimeout(() => {
+        this.editedItem = Object.assign({}, this.defaultItem)
+        this.editedIndex = -1
+        this.selected = []
+      }, 300)
+    },
+    addSignature (sig) {
+      // missing version, ldap, version_archived
       switch (this.modus) {
         case 'delete':
-          this.del(sig)
+          this.delete(sig)
           break
         case 'add':
-          this.save2(sig)
+          this.save(sig)
           break
         case 'edit':
-          this.save2(sig)
+          this.save(sig)
+          break
+        case 'version':
+          this.newVersion(sig)
           break
         default:
-          this.ch(sig)
+          this.changeStatus(sig)
           break
+      }
+    },
+    mapping (permission) {
+      // mapping of permission to transition target
+      switch (permission) {
+        case 'archived':
+          return 'archive'
+        case 'blocked':
+          return 'block'
+        case 'circulation':
+          return 'circulation'
+        case 'inactive':
+          return 'inactivate'
+        case 'productive':
+          return 'productive'
+        case 'draft':
+          return 'reject'
+        case 'canceled':
+          return 'cancel'
+        case 'complete':
+          return 'complete'
+        case 'started':
+          return 'start'
       }
     },
     getColor (status) {
-      if (status === 'productive') {
+      if (status === 'productive' || status === 'complete') {
         return '#36B37E'
-      } else if (status === 'blocked' || status === 'archived') {
+      } else if (status === 'blocked' || status === 'archived' || status === 'canceled') {
         return '#FF5630'
       } else {
         return '#FFAB00'
       }
     },
-    newVersion () {
-      let item = this.selected[0]
-      axios({
-        method: 'post',
-        url: `/${this.inpt}/${item.lifecycle_id}/${item.version}`,
-        withCredentials: true
-      })
-        .then(resp => {
-          this.loadData()
-        })
-        .catch(err => {
-          this.activate({ color: 'error', message: err.response.data })
-        })
-    },
     allowed (transition) {
-      if (this.selected.length !== 1) {
+      // this.selected.length !== 1)
+      if (!this.sameStatus) {
         return true
       } else {
         const currentStatus = this.selected[0]['status']
@@ -1273,19 +1439,37 @@ export default {
         return true
       }
     },
-    addQuickFilter () {
-      //
+    allowedRtd (transition) {
+      // this.selected.length !== 1)
+      if (!this.sameStatus) {
+        return true
+      } else {
+        const currentStatus = this.selected[0]['status']
+        if (this.allowedRtdTransistions[currentStatus].indexOf(transition) > -1) { return false }
+        return true
+      }
     },
-    deleteQuickFilter () {
-      //
+    handleErrors (payloadErrors, msgs = []) {
+      if ('validation_errors' in payloadErrors || msgs.length) {
+        this.activate({
+          color: 'error',
+          message: !msgs.length ? payloadErrors['validation_errors'] : msgs
+        })
+      }
+      this.errorMsgs = _.cloneDeep(payloadErrors)
     }
   },
 
   mounted () {
+    // set default num of items for pagination
+    this.options.itemsPerPage = parseInt(this.$store.getters['user2/profile']['gui.pagination'])
+    // set default for dense prop of table
+    this.dense = this.$store.getters['user2/profile']['gui.dense'] === 'Yes'
+
     this.inpt = this.config['url']['rel']
     this.load()
     // focus main div
-    this.$refs.main.focus()
+    // this.$refs.main.focus()
   }
 }
 </script>

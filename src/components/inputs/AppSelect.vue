@@ -1,17 +1,21 @@
 <template>
   <v-autocomplete
     v-model="content"
-    dense
     :items="items"
     :hint="hint"
     :required="required"
     :disabled="!editable"
     :multiple="multiple"
-    persistent-hint
-    small-chips
     :error="error"
     :error-messages="errormsgs"
+    :success="success"
+    :append-outer-icon="success ? 'check_circle_outline' : ''"
+    error-count="10"
+    persistent-hint
+    :clearable="multiple ? true : false"
+    small-chips
     @input="handleInput"
+    click:clear="reset"
   >
     <!-- slot: label -->
     <template v-slot:label>
@@ -70,6 +74,11 @@ export default {
     },
     multiple: {
       type: Boolean
+    },
+    success: {
+      type: Boolean,
+      default: false,
+      required: false
     }
   },
 
@@ -101,6 +110,7 @@ export default {
   watch: {
     value: {
       immediate: true,
+      deep: true,
       handler (newVal) {
         this.content = newVal
       }
@@ -119,6 +129,9 @@ export default {
         this.content = this.items.slice()
         this.$emit('input', this.content)
       }
+    },
+    reset () {
+      this.content = this.multiple ? [] : ''
     }
   }
 }

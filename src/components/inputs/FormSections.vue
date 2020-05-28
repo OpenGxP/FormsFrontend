@@ -132,10 +132,18 @@ export default {
   props: {
     fields: {
       type: Object,
-      default: function () {
-        return {
-        }
-      }
+      default: () => {}
+    },
+    editable: {
+      type: Boolean,
+      default: false
+    },
+    error: {
+      type: Boolean,
+      default: false
+    },
+    errorMsgs: {
+      type: [Array, Object]
     }
   },
 

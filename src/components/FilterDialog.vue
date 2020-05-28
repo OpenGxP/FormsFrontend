@@ -35,12 +35,11 @@
                     justify="center"
                   >
                     <v-col cols="4">
-                      <v-select
+                      <v-autocomplete
                         v-if="i === 0"
                         v-model="filter.field"
                         :items="usableFields"
-
-                        return-object
+                        :return-object="true"
                       />
                     </v-col>
                     <v-col cols="4">

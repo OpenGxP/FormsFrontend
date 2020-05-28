@@ -48,42 +48,42 @@
                       v-model="oldPassword"
                       autofocus
                       prepend-icon="lock"
-                      :append-icon="show1 ? 'visibility_off' : 'visibility'"
+                      :append-icon="showPassword ? 'visibility_off' : 'visibility'"
                       :rules="[rules.required, rules.min]"
-                      :type="show1 ? 'text' : 'password'"
+                      :type="showPassword ? 'text' : 'password'"
                       name="oldPassword"
                       label="Old Password"
-                      :error="err"
-                      :error-messages="errMsgs"
-                      @click:append="show1 = !show1"
+                      :error="('password' in errMsgs)"
+                      :error-messages="errMsgs.password"
+                      @click:append="showPassword = !showPassword"
                       @keyup.enter="savePassword()"
                     />
                     <v-text-field
                       id="newPassword"
                       v-model="newPassword"
                       prepend-icon="lock"
-                      :append-icon="show2 ? 'visibility_off' : 'visibility'"
+                      :append-icon="showNewPassword ? 'visibility_off' : 'visibility'"
                       :rules="[rules.required, rules.min]"
-                      :type="show2 ? 'text' : 'password'"
+                      :type="showNewPassword ? 'text' : 'password'"
                       name="newPassword"
                       label="New Password"
-                      :error="err"
-                      :error-messages="errMsgs"
-                      @click:append="show2 = !show2"
+                      :error="('password_new' in errMsgs)"
+                      :error-messages="errMsgs.password_new"
+                      @click:append="showNewPassword = !showNewPassword"
                       @keyup.enter="savePassword()"
                     />
                     <v-text-field
                       id="confirm"
                       v-model="newPasswordConfirm"
                       prepend-icon="lock"
-                      :append-icon="show2 ? 'visibility_off' : 'visibility'"
+                      :append-icon="showNewPassword ? 'visibility_off' : 'visibility'"
                       :rules="[rules.required, rules.min, rules.match]"
-                      :type="show2 ? 'text' : 'password'"
+                      :type="showNewPassword ? 'text' : 'password'"
                       name="confirm"
                       label="Confirm New Password"
-                      :error="err"
-                      :error-messages="errMsgs"
-                      @click:append="show2 = !show2"
+                      :error="('password_new_verification' in errMsgs)"
+                      :error-messages="errMsgs.password_new_verification"
+                      @click:append="showNewPassword = !showNewPassword"
                       @keyup.enter="savePassword()"
                     />
                   </v-form>
@@ -137,14 +137,13 @@ export default {
 
   data () {
     return {
-      err: false,
       errMsgs: [],
       color: 'primary',
       oldPassword: '',
       newPassword: '',
       newPasswordConfirm: '',
-      show1: false,
-      show2: false,
+      showPassword: false,
+      showNewPassword: false,
       rules: {
         required: value => !!value || 'Required.',
         min: v => v.length >= 8 || 'Min 8 characters',
@@ -170,8 +169,6 @@ export default {
 
   methods: {
     ...mapActions({
-      // snackbar
-      activate: 'global/snackbar/activate',
       changePassword: 'user2/changePassword',
       changeTimezone: 'user2/changeTimezone',
       getTimezoneMeta: 'user2/getTimezoneMeta',
@@ -195,9 +192,7 @@ export default {
           if (!this.initialTimezone) this.init()
         })
         .catch(err => {
-          this.err = true
           this.errMsgs = err.response.data
-          this.activate({ color: 'error', message: err.response.data[0] })
         })
     },
     saveTimezone () {

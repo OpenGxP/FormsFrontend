@@ -1,14 +1,16 @@
 <template>
   <v-container>
-    <v-card color="primary">
+    <v-card color="secondary">
       <v-card-title>General</v-card-title>
       <v-card-text>
 
         <v-row>
           <v-col>
             <v-switch
+              :input-value="profile['gui.darkmode']"
               label="gui.darkmode"
-              :value="profile['gui.darkmode'] === 'Yes'"
+              false-value="No"
+              true-value="Yes"
               @change="changeProfile($event, 'gui.darkmode')"
             ></v-switch>
           </v-col>
@@ -17,8 +19,10 @@
         <v-row>
           <v-col>
             <v-switch
+              :input-value="profile['gui.dense']"
               label="gui.dense"
-              :value="profile['gui.dense'] == 'Yes'"
+              false-value="No"
+              true-value="Yes"
               @change="changeProfile($event, 'gui.dense')"
             ></v-switch>
           </v-col>
@@ -27,9 +31,9 @@
         <v-row>
           <v-col>
             <v-select
+              :value="parseInt(profile['gui.pagination'])"
               label="gui.pagination"
               :items="paginationoptions"
-              :value="profile['gui.pagination']"
               @change="changeProfile($event, 'gui.pagination')"
             ></v-select>
           </v-col>
@@ -147,23 +151,18 @@
 
 <script>
 import axios from 'axios'
-import { mapGetters, mapActions } from 'vuex'
+import { mapActions } from 'vuex'
 
 export default {
   data () {
     return {
       //
-      test: 'en_EN',
-      attributes: [],
       timezones: [],
       paginationoptions: [5, 10, 15, 25, 50, 100],
       //
-      ct: '',
-      timezone: '',
       myval: '',
       items: [],
       dialog: false,
-      dia: false,
       err: false,
       errMsgs: [],
       password: '',
@@ -171,8 +170,6 @@ export default {
       password_new_verification: '',
       show1: false,
       show2: false,
-      dark: false,
-      dense: false,
       rules: {
         required: value => !!value || 'Required.',
         min: v => v.length >= 8 || 'Min 8 characters',
@@ -184,10 +181,6 @@ export default {
   },
 
   computed: {
-    ...mapGetters({
-      darkTheme: 'darkTheme',
-      tableSettings: 'tableSettings'
-    }),
     profile () {
       return this.$store.getters['user2/profile']
     }
@@ -198,9 +191,6 @@ export default {
       activate: 'snackbar/activate'
     }),
     // api calls
-    patch (key, payload) {
-      return this.$http.patch(`/user/profile/${key}`, payload)
-    },
     changePassword (payload) {
       return this.$http.patch('user/change_password', payload)
     },
@@ -232,56 +222,22 @@ export default {
           this.activate({ color: 'error', message: this.errMsgs })
         })
     },
-    edit () {
-      const key = 'gui.dense'
-      const payload = { value: 'Yes' }
-      this.$http.patch(`user/profile/${key}`, payload)
-    },
-    ss () {
-      if (this.ct) {
-        this.timezone = this.ct
-        this.patch('loc.timezone', { value: this.timezone })
-      }
-      this.dia = false
-    },
     changeProfile (event, context) {
-      switch (context) {
-        case 'gui.darkmode':
-        case 'gui.dense':
-          this.$http.patch(`/user/profile/${context}`, { 'value': event })
-            .then(this.$store.commit('setTheme', event ? 'Yes' : 'No'))
-          break
-        default:
-          this.$http.patch(`/user/profile/${context}`, { 'value': event })
-            .then(this.$store.commit('setTheme', event))
-          break
-      }
+      this.$http.patch(`/user/profile/${context}`, { 'value': event })
+        .then(() => {
+          this.$store.dispatch('user2/changeProfile', { [context]: event })
+          if (context === 'gui.darkmode') this.$store.commit('setTheme', event)
+        })
     }
   },
 
   watch: {
+    // reset pw data
     dialog (val) {
       if (!val) {
         this.password = ''
         this.password_new = ''
         this.password_new_verification = ''
-      }
-    },
-    dark (val) {
-      this.patch('gui.darkmode', { 'value': val ? 'Yes' : 'No' })
-        .then(this.$store.commit('setTheme', val ? 'Yes' : 'No'))
-    },
-    dense (val) {
-      this.patch('gui.dense', { 'value': val ? 'Yes' : 'No' })
-      //  .then(this.$store.commit(val ? 'Yes' : 'No'))
-    },
-    items: {
-      immediate: true,
-      handler (val) {
-        if (this.itmes) {
-          let timezone = this.items.find(obj => obj.key === 'loc.timezone')
-          this.timezone = timezone.value
-        }
       }
     }
   },
@@ -296,9 +252,6 @@ export default {
     this.$http.get('user/profile').then(resp => {
       this.items = resp.data.results
     })
-
-    this.dark = this.darkTheme
-    this.dense = this.tableSettings.dense
   }
 }
 </script>

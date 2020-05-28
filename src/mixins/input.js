@@ -13,6 +13,14 @@ export default {
       required: false,
       type: [Array, String]
     },
+    counter: {
+      required: false,
+      type: [Number]
+    },
+    maxlength: {
+      required: false,
+      type: [Number]
+    },
     required: {
       default: false,
       required: false,

@@ -4,56 +4,73 @@
       <span class="headline">Select Permissions</span>
     </v-card-title>
 
-    <v-sheet class="pa-3">
-      <v-layout>
-        <v-flex
-          xs12
-          lg6
-          md-6
+    <v-row>
+      <v-col cols="6">
+        <v-text-field
+          v-model="search"
+          label="Search Permisions"
+          text
+          hide-details
+          clearable
+          clear-icon="close"
+          :disabled="!editable"
+        />
+      </v-col>
+      <v-col cols="6">
+        <v-btn
+          text
+          :disabled="!editable"
+          @click="tree = []"
         >
-          <v-text-field
-            v-model="search"
-            label="Search Permisions"
-            dark
-            text
-            background-color="grey lighten-2"
-            solo-inverted
-            hide-details
-            clearable
-            clear-icon="close"
-            :disabled="!editable"
-          />
-        </v-flex>
-      </v-layout>
-    </v-sheet>
+          Reset
+        </v-btn>
+        <v-btn
+          text
+          @click="open = []"
+        >
+          Collapse
+        </v-btn>
+      </v-col>
+    </v-row>
 
-    <v-layout justify-center>
-      <v-flex>
-        <v-card-text>
-          <v-treeview
-            v-model="tree"
-            :items="items"
-            active-class="grey lighten-4 indigo--text"
-            selected-color="indigo"
-            open-on-click
-            selectable
-            item-disabled="locked"
-            :search="search"
-            :open.sync="open"
-            @input="handleChange"
-          />
-        </v-card-text>
-      </v-flex>
-      <v-divider vertical />
-      <v-flex
-        xs12
-        md6
+    <v-container
+      fluid
+      id="scroll-target"
+      style="max-height: 600px"
+      class="overflow-y-auto"
+    >
+      <v-row
+        v-scroll:#scroll-target="onScroll"
+        style="height: 1000px"
+      >
+        <v-col>
+          <v-card-text>
+            <v-treeview
+              v-model="tree"
+              :items="items"
+              active-class="grey lighten-4 indigo--text"
+              selected-color="primary"
+              open-on-click
+              selectable
+              item-disabled="locked"
+              :search="search"
+              :open.sync="open"
+              @input="handleChange"
+            />
+          </v-card-text>
+        </v-col>
+
+        <!--<v-divider vertical />
+
+        <v-col
+        cols="12"
+        md="6"
       >
         <v-card-text>
           <div
             v-if="selections.length === 0"
             key="title"
-            class="title font-weight-light grey--text pa-3 text-xs-center"
+            class="title font-weight-light grey--text pa-4 text-center"
           >
             Select permissions
           </div>
@@ -64,7 +81,7 @@
             <v-chip
               v-for="(selection, i) in selections"
               :key="i"
-              color="green"
+              color="primary"
               dark
               small
               class="ma-1"
@@ -79,26 +96,9 @@
             </v-chip>
           </v-scroll-x-transition>
         </v-card-text>
-      </v-flex>
-    </v-layout>
-
-    <v-divider />
-
-    <v-card-actions style="padding-top: 30px">
-      <v-btn
-        text
-        :disabled="!editable"
-        @click="tree = []"
-      >
-        Reset
-      </v-btn>
-      <v-btn
-        text
-        @click="open = []"
-      >
-        Collapse
-      </v-btn>
-    </v-card-actions>
+      </v-col>-->
+      </v-row>
+    </v-container>
   </v-card>
 </template>
 
@@ -106,7 +106,17 @@
 import axios from 'axios'
 
 export default {
-  props: ['value', 'editable'],
+  props: {
+    value: {
+      type: [Array, String],
+      required: true
+    },
+    editable: {
+      type: Boolean,
+      required: false,
+      default: true
+    }
+  },
 
   data () {
     return {
@@ -115,6 +125,7 @@ export default {
       isLoading: false,
       types: [],
       open: ['All permissions'],
+      offsetTop: 0,
       search: null
     }
   },
@@ -164,10 +175,11 @@ export default {
       deep: true
     },
     value: {
-      immediate: true,
       handler (newVal) {
         if (this.flatSelection.toString() !== newVal) this.tree = this.conv(newVal)
-      }
+      },
+      immediate: true,
+      deep: true
     }
   },
 
@@ -212,6 +224,9 @@ export default {
     },
     handleChange (e) {
       this.$emit('input', this.flatSelection.toString())
+    },
+    onScroll (e) {
+      this.offsetTop = e.target.scrollTop
     }
   }
 }

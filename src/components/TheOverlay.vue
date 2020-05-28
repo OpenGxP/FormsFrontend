@@ -67,7 +67,7 @@ export default {
         {
           category: 'Global shortcuts',
           shortcuts: [
-            { title: 'Toggle toolbar', markup: ['shift', 'space'] },
+            { title: 'Toggle drawer', markup: ['shift', 'space'] },
             { title: 'Toggle search', markup: ['shift', 'enter'] },
             { title: 'Log out', markup: ['F1'] },
             { title: 'Keyboard shortcuts', markup: ['?'] }

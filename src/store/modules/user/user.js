@@ -51,6 +51,9 @@ const actions = {
         .catch(err => { reject(err) })
     })
   },
+  changeProfile: ({ commit }, payload) => {
+    commit('changeProfile', payload)
+  },
   /*
   changeTimezone ({ commit, dispatch }, timezone) {
     return new Promise((resolve, reject) => {
@@ -81,7 +84,7 @@ const mutations = {
     state.username = username
   },
   changeProfile (state, payload) {
-    state.profile = payload
+    state.profile = Object.assign(state.profile, payload)
   },
   changeGuiDarkmode (state, payload) {
     state.profile['gui.darkmode'] = payload
